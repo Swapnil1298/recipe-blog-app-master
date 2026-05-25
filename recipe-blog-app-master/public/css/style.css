@@ -1,0 +1,361 @@
+:root{
+    --bs-font-sans-serif: sans-serif;
+}
+
+.container-xxl{
+    max-width: 1350px;
+}
+
+body{
+    background: url("/img/i-like-food.svg");
+    background-color: rgb(243, 243, 243);
+}
+
+a{color: var(--bs-dark);}
+
+/* Category Card */
+.category__link{
+    text-align: center;
+    display: block;
+    text-decoration: none;
+    transition: 250ms;
+}
+
+.category__link:hover{
+    transform: scale(1.1);
+}
+
+.category__img{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    margin-bottom: 10px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16);
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.category__img img{
+    width: 100%;
+    object-fit: cover;
+}
+
+/* Latest Style section */
+.category__img--large{
+    height: 300px;
+}
+
+
+/* Custom Interaction Styles */
+.hover-red {
+    transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.hover-red:hover {
+    color: #dc3545 !important;
+    transform: scale(1.15);
+}
+
+.animate-pulse {
+    animation: pulse 0.3s ease-in-out;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+.transition-all {
+    transition: all 0.25s ease-in-out !important;
+}
+.transition-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(235, 105, 40, 0.3) !important;
+    filter: brightness(1.05);
+}
+
+.border-dashed {
+    border: 2px dashed #d0d0d0 !important;
+}
+
+
+ /* UTILS TEXT CENTERING */
+ .centring{
+    text-align: center;
+ }
+
+
+ /* footer css  */
+ @import url(https://fonts.googleapis.com/css?family=Open+Sans:400,500,300,700);
+
+ * {
+   font-family: Open Sans;
+ }
+ 
+ .footer-distributed{
+     background: #d0d0d0;
+     box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.12);
+     box-sizing: border-box;
+     width: 100%;
+     text-align: left;
+     font: bold 16px sans-serif;
+     padding: 55px 50px;
+ }
+ 
+ .footer-distributed .footer-left,
+ .footer-distributed .footer-center,
+ .footer-distributed .footer-right{
+     display: inline-block;
+     vertical-align: top;
+ }
+ 
+ /* Footer left */
+ 
+ .footer-distributed .footer-left{
+     width: 40%;
+ }
+
+ .footer-left img{
+    width: 200px;
+ }
+ 
+ /* The company logo */
+ 
+ .footer-distributed h3{
+     color:  #ffffff;
+     font: normal 36px 'Open Sans', cursive;
+     margin: 0;
+ }
+ 
+ .footer-distributed h3 span{
+     color:  lightseagreen;
+ }
+ 
+ /* Footer links */
+ 
+ .footer-distributed .footer-links{
+     color:  #000;
+     margin: 20px 0 12px;
+     padding: 0;
+ }
+ 
+ .footer-distributed .footer-links a{
+    display:inline-block;
+    line-height: 1.8;
+    font-weight:400;
+    text-decoration: none;
+    color:  inherit;
+    font-size: 20px;
+ }
+ 
+ 
+ .footer-distributed .footer-company-name{
+     color:  #222;
+     font-size: 14px;
+     font-weight: normal;
+     margin: 0;
+ }
+ 
+ /* Footer Center */
+ 
+ .footer-distributed .footer-center{
+     width: 35%;
+ }
+ 
+ .footer-distributed .footer-center i{
+     color: #000;
+     font-size: 25px;
+     width: 38px;
+     height: 38px;
+     border-radius: 50%;
+     text-align: center;
+     line-height: 42px;
+     margin: 10px 15px; 
+     vertical-align: middle;
+     padding: 5px;
+ }
+ 
+ .footer-distributed .footer-center i.fa-envelope{
+     font-size: 17px;
+     line-height: 38px;
+ }
+ 
+ .footer-distributed .footer-center p{
+     display: inline-block;
+     color: #000;
+   font-weight:400;
+     vertical-align: middle;
+     margin:0;
+ }
+ 
+ .footer-distributed .footer-center p span{
+     display:block;
+     font-weight: normal;
+     font-size:14px;
+     line-height:2;
+ }
+ 
+ .footer-distributed .footer-center p a{
+     color:  lightseagreen;
+     text-decoration: none;;
+ }
+ 
+ .footer-distributed .footer-links a:before {
+   content: "|";
+   font-weight:300;
+   font-size: 20px;
+   left: 0;
+   color: #000;
+   display: inline-block;
+   padding-right: 5px;
+ }
+ 
+ .footer-distributed .footer-links .link-1:before {
+   content: none;
+ }
+ 
+ /* Footer Right */
+ 
+ .footer-distributed .footer-right{
+     width: 20%;
+ }
+ 
+ .footer-distributed .footer-company-about{
+     line-height: 20px;
+     color:  #000;
+     font-size: 13px;
+     font-weight: normal;
+     margin: 0;
+ }
+ 
+ .footer-distributed .footer-company-about span{
+     display: block;
+     color:  #000;
+     font-size: 18px;
+     font-weight: bold;
+     margin-bottom: 20px;
+ }
+ 
+ .footer-distributed .footer-icons{
+     margin-top: 25px;
+ }
+ 
+ .footer-distributed .footer-icons a{
+     display: inline-block;
+     width: 35px;
+     height: 35px;
+     cursor: pointer;
+     border-radius: 2px;
+ 
+     font-size: 20px;
+     color: #ffffff;
+     text-align: center;
+     line-height: 35px;
+ 
+     margin-right: 7px;
+     margin-bottom: 5px;
+ }
+
+ .footer-distributed .footer-icons a i{
+    font-size: 20px;
+    color: #000;
+ }
+ 
+ /* If you don't want the footer to be responsive, remove these media queries */
+ 
+ @media (max-width: 880px) {
+ 
+     .footer-distributed{
+         font: bold 14px sans-serif;
+     }
+ 
+     .footer-distributed .footer-left,
+     .footer-distributed .footer-center,
+     .footer-distributed .footer-right{
+         display: block;
+         width: 100%;
+         margin-bottom: 40px;
+         text-align: center;
+     }
+ 
+     .footer-distributed .footer-center i{
+         margin-left: 0;
+     }
+ 
+ }
+ 
+
+/* If you don't want the footer to be responsive, remove these media queries */
+
+@media (max-width: 880px) {
+
+	.footer-distributed{
+		font: bold 14px sans-serif;
+	}
+
+	.footer-distributed .footer-left,
+	.footer-distributed .footer-center,
+	.footer-distributed .footer-right{
+		display: block;
+		width: 100%;
+		margin-bottom: 40px;
+		text-align: center;
+	}
+
+	.footer-distributed .footer-center i{
+		margin-left: 0;
+	}
+
+}
+
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .hero-text {
+    font-size: 2.5rem;
+  }
+  
+  .hero-paragraph {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+    .display-4{
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 470px) {
+    .lead{
+        font-size: 1rem;
+    }
+
+    i{
+        font-size: 38px;
+    }
+}
+
+@media (max-width: 380px) {
+    
+    .display-4{
+        font-size: 1.3rem;
+    }
+
+    .lead{
+        font-size: .8rem;
+    }
+
+    i{
+        font-size: 38px;
+    }
+}
+
+
+
+
+
+
+
+
+

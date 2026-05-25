@@ -1,0 +1,144 @@
+<% if(recipe != null){ %>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">
+      <%- recipe.name %>
+    </li>
+  </ol>
+</nav>
+
+<div class="row">
+  <div class="col-12 col-md-4">
+    <img
+      src="/uploads/<%- recipe.image %>"
+      alt="<%- recipe.name %>"
+      class="img-fluid sticky-top"
+      style="top: 20px"
+      loading="lazy"
+    />
+  </div>
+
+  <div class="col-12 col-md-8">
+    <div class="row">
+      <div class="col-12"><h1><%- recipe.name %></h1></div>
+      <div class="col-12 mb-4 d-flex align-items-center gap-3">
+        <span><i class="bi bi-tag"></i> <%- recipe.category %></span>
+        <span class="text-muted">|</span>
+        
+        <!-- Likes Section -->
+        <div class="d-flex align-items-center gap-2">
+          <% if (user) { %>
+            <form action="/recipe/<%= recipe._id %>/like" method="post" class="d-inline">
+              <button type="submit" class="btn btn-link p-0 border-0 text-decoration-none d-flex align-items-center gap-1" style="box-shadow: none;">
+                <% if (recipe.likes && recipe.likes.includes(user._id)) { %>
+                  <i class="bi bi-heart-fill fs-4 text-danger animate-pulse"></i>
+                <% } else { %>
+                  <i class="bi bi-heart fs-4 text-secondary hover-red"></i>
+                <% } %>
+                <span class="fw-bold text-dark fs-5"><%= (recipe.likes && recipe.likes.length) || 0 %></span>
+              </button>
+            </form>
+          <% } else { %>
+            <div class="d-flex align-items-center gap-1 text-muted" title="Log in to like this recipe!">
+              <i class="bi bi-heart fs-4 text-secondary"></i>
+              <span class="fw-bold fs-5"><%= (recipe.likes && recipe.likes.length) || 0 %></span>
+              <small class="ms-2">(Log in to like)</small>
+            </div>
+          <% } %>
+        </div>
+      </div>
+      <div class="col-12" style="white-space: pre-line">
+        <h4>Cooking Instructions</h4>
+        <%- recipe.description %>
+      </div>
+    </div>
+    <div class="row pt-4">
+      <div class="col-12">
+        <h4>Ingredients</h4>
+        <ul class="list-group list-group-flush">
+          <% recipe.ingredients.forEach(function(ingredient) { %>
+          <li class="list-group-item"><%= ingredient %></li>
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Interactions & Comments Section -->
+<hr class="my-5" />
+
+<div class="row">
+  <div class="col-lg-8 col-12 mx-auto">
+    <h3 class="fw-bold mb-4"><i class="bi bi-chat-left-text me-2" style="color: #eb6928 !important;"></i>Comments (<%= (recipe.comments && recipe.comments.length) || 0 %>)</h3>
+
+    <% if (infoErrorsObj && infoErrorsObj.length > 0) { %>
+      <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+        <%= infoErrorsObj[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+
+    <!-- Comment Input Form -->
+    <% if (user) { %>
+      <div class="card border-0 shadow-sm p-4 rounded-4 mb-4 bg-light">
+        <form action="/recipe/<%= recipe._id %>/comment" method="post">
+          <div class="mb-3">
+            <label for="commentTextarea" class="form-label fw-semibold text-muted">Join the conversation</label>
+            <textarea name="comment" class="form-control rounded-3 border-0 shadow-sm" id="commentTextarea" rows="3" placeholder="Share your thoughts or tips on this recipe..." required></textarea>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary px-4 fw-bold rounded-3 shadow-sm" style="background: #eb6928; border: none;">
+              Post Comment
+            </button>
+          </div>
+        </form>
+      </div>
+    <% } else { %>
+      <div class="card border-0 shadow-sm p-4 rounded-4 mb-4 text-center" style="border: 2px dashed #d0d0d0 !important;">
+        <p class="mb-2 text-muted fw-semibold">Want to share your experience cooking this?</p>
+        <a href="/login" class="btn btn-outline-primary px-4 fw-bold rounded-3" style="color: #eb6928; border-color: #eb6928; background: transparent;">
+          Log in to Comment
+        </a>
+      </div>
+    <% } %>
+
+    <!-- Comments List -->
+    <div class="comment-thread mt-4">
+      <% if (recipe.comments && recipe.comments.length > 0) { %>
+        <% recipe.comments.forEach(function(comment) { %>
+          <div class="card border-0 shadow-sm rounded-4 p-3 mb-3 bg-white">
+            <div class="d-flex align-items-start gap-3">
+              <!-- User Circular Avatar with Initials -->
+              <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" 
+                   style="width: 48px; height: 48px; background: linear-gradient(135deg, #eb6928, #f7c0a5); font-size: 1.1rem; flex-shrink: 0;">
+                <%= comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U' %>
+              </div>
+              <!-- Comment Bubble -->
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <h6 class="fw-bold mb-0 text-dark"><%= comment.userName %></h6>
+                  <small class="text-muted">
+                    <%= new Date(comment.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                  </small>
+                </div>
+                <p class="mb-0 text-secondary" style="white-space: pre-line;"><%= comment.comment %></p>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-chat-square-text fs-2 mb-2 d-inline-block"></i>
+          <p class="mb-0">No comments yet. Be the first to share your thoughts!</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<% } else { %>
+<p>No item found.</p>
+<% } %>

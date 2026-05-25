@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      <%= typeof title != 'undefined' ? title: 'Cooking Blog - Made With NodeJs'
+      %>
+    </title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="container-xxl px-md-5 bg-white shadow-lg">
+      <header
+        class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom"
+      >
+        <a
+          href="/"
+          class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none"
+        >
+          <img
+            src="/img/logo.svg"
+            alt="Cooking Blog - Made With Node.js"
+            width="229"
+            height="68"
+          />
+        </a>
+
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+          <li>
+            <a href="/" class="nav-link px-2 link-secondary">Home</a>
+          </li>
+          <li>
+            <a href="/submit-recipe" class="nav-link px-2 link-secondary"
+              >Submit</a
+            >
+          </li>
+          <% if (user) { %>
+            <li>
+              <span class="nav-link px-2 text-dark fw-bold">Hello, <%= user.name %>!</span>
+            </li>
+            <li>
+              <a href="/logout" class="nav-link px-2 text-danger fw-bold"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+            </li>
+          <% } else { %>
+            <li>
+              <a href="/login" class="nav-link px-2 link-secondary">Login</a>
+            </li>
+            <li>
+              <a href="/register" class="nav-link px-2 link-secondary">Register</a>
+            </li>
+          <% } %>
+        </ul>
+
+        <div class="col-md-3 text-end">
+          <form action="/search" method="post">
+            <input
+              type="search"
+              name="searchTerm"
+              class="form-control"
+              placeholder="Search..."
+              aria-label="Search"
+            />
+          </form>
+        </div>
+      </header>
+
+      <main><%- body -%></main>
+
+      <hr />
+      <footer class="footer-distributed">
+        <div class="footer-left">
+          <img src="/img/logo.svg" alt="" />
+
+          <p class="footer-links">
+            <a href="/" class="link-1">Home</a>
+            <a href="/submit-recipe">Submit</a>
+            <% if (user) { %>
+              <a href="/logout">Logout</a>
+            <% } else { %>
+              <a href="/login">Login</a>
+              <a href="/register">Register</a>
+            <% } %>
+          </p>
+
+          <p class="footer-company-name">Cooking Blog © 2024</p>
+        </div>
+
+        <div class="footer-center">
+          <div>
+            <i class="fa fa-map-marker"></i>
+            <p><span>Jabalpur</span>Madhya Pradesh</p>
+          </div>
+
+          <div>
+            <i class="fa fa-phone"></i>
+            <p>+91 1234567890</p>
+          </div>
+
+          <div>
+            <i class="fa fa-envelope"></i>
+            <p><a href="mailto:support@company.com">support@gmail.com</a></p>
+          </div>
+        </div>
+
+        <div class="footer-right">
+          <p class="footer-company-about">
+            <span>Connect With Us</span>
+
+            "Follow us on social media for the latest culinary updates, mouthwatering recipes, and cooking tips!"
+          </p>
+
+          <div class="footer-icons">
+            <a href="#"><i class="fa fa-facebook"></i></a>
+            <a href="#"><i class="fa fa-twitter"></i></a>
+            <a href="#"><i class="fa fa-linkedin"></i></a>
+            <a href="#"><i class="fa fa-github"></i></a>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://kit.fontawesome.com/5be481a16d.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="/js/script.js"></script>
+  </body>
+</html>

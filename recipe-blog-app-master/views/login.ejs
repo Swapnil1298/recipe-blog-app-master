@@ -1,0 +1,47 @@
+<div class="row justify-content-center my-5">
+  <div class="col-md-6 col-lg-5">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+      <div class="card-body p-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-person-circle fs-1 text-primary mb-2 d-inline-block" style="color: #eb6928 !important;"></i>
+          <h2 class="fw-bold text-dark">Welcome Back</h2>
+          <p class="text-muted">Log in to your Cooking Blog account</p>
+        </div>
+
+        <% if (infoErrorsObj && infoErrorsObj.length > 0) { %>
+          <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+            <%= infoErrorsObj[0] %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% } %>
+
+        <% if (infoSubmitObj && infoSubmitObj.length > 0) { %>
+          <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+            <%= infoSubmitObj[0] %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% } %>
+
+        <form action="/login" method="post" class="needs-validation" novalidate>
+          <div class="form-floating mb-3">
+            <input type="email" name="email" class="form-control rounded-3" id="emailInput" placeholder="name@example.com" required>
+            <label for="emailInput">Email address</label>
+          </div>
+
+          <div class="form-floating mb-4">
+            <input type="password" name="password" class="form-control rounded-3" id="passwordInput" placeholder="Password" required>
+            <label for="passwordInput">Password</label>
+          </div>
+
+          <button class="w-100 btn btn-lg btn-primary py-3 fw-bold rounded-3 shadow-sm transition-all" type="submit" style="background: linear-gradient(135deg, #eb6928, #f7c0a5); border: none;">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Log In
+          </button>
+        </form>
+
+        <div class="text-center mt-4">
+          <p class="mb-0 text-muted">Don't have an account? <a href="/register" class="fw-bold text-decoration-none" style="color: #eb6928;">Register here</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
