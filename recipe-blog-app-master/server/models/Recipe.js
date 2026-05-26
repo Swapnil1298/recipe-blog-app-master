@@ -56,6 +56,11 @@ const recipeSchema = new mongoose.Schema({
       default: Date.now,
     },
   }],
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: false,
+  },
 });
 
 recipeSchema.index({ name: "text", description: "text" });

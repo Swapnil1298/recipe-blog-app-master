@@ -16,10 +16,12 @@ router.get("/explore-latest", recipeController.exploreLatest);
 router.get("/explore-random", recipeController.exploreRandom);
 router.get("/submit-recipe", recipeController.submitRecipe);
 router.post("/submit-recipe", recipeController.submitRecipeOnPost);
+router.get("/about", recipeController.aboutPage);
 
 // Interactions
 router.post("/recipe/:id/like", recipeController.likeRecipe);
 router.post("/recipe/:id/comment", recipeController.commentRecipe);
+router.post("/recipe/:id/delete", recipeController.deleteRecipe);
 
 // Auth Routes
 router.get("/register", authController.getRegister);

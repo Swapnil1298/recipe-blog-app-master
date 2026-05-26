@@ -48,6 +48,14 @@
             </div>
           <% } %>
         </div>
+
+        <% if (user && recipe.user && recipe.user.toString() === user._id.toString()) { %>
+          <form action="/recipe/<%= recipe._id %>/delete" method="post" class="d-inline ms-auto" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+            <button type="submit" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 py-1 px-3 rounded-pill fw-bold border-2 shadow-sm" style="font-size: 0.85rem; transition: all 0.3s ease;">
+              <i class="bi bi-trash3-fill"></i> Delete Recipe
+            </button>
+          </form>
+        <% } %>
       </div>
       <div class="col-12" style="white-space: pre-line">
         <h4>Cooking Instructions</h4>

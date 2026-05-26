@@ -145,6 +145,10 @@ exports.exploreRandom = async (req, res) => {
  * Submit Recipe
  */
 exports.submitRecipe = async (req, res) => {
+  if (!req.session.userId) {
+    req.flash("infoErrors", "You must be logged in to submit a recipe.");
+    return res.redirect("/login");
+  }
   const infoErrorsObj = req.flash("infoErrors");
   const infoSubmitObj = req.flash("infoSubmit");
 
@@ -161,6 +165,11 @@ exports.submitRecipe = async (req, res) => {
  */
 exports.submitRecipeOnPost = async (req, res) => {
   try {
+    if (!req.session.userId) {
+      req.flash("infoErrors", "You must be logged in to submit a recipe.");
+      return res.redirect("/login");
+    }
+
     let imageUploadFile = req.files.image; // Changed to req.files.image to correctly access the uploaded file
     let uploadPath;
     let newImageName;
@@ -185,6 +194,7 @@ exports.submitRecipeOnPost = async (req, res) => {
       ingredients: req.body.ingredients,
       category: req.body.category,
       image: newImageName,
+      user: req.session.userId,
     });
 
     await newRecipe.save();
@@ -621,4 +631,60 @@ exports.commentRecipe = async (req, res) => {
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
   }
+};
+
+/**
+ * POST /recipe/:id/delete
+ * Delete Recipe (Only by owner)
+ */
+exports.deleteRecipe = async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      req.flash("infoErrors", "You must be logged in to delete a recipe.");
+      return res.redirect(`/recipe/${req.params.id}`);
+    }
+
+    const recipeId = req.params.id;
+    const recipe = await Recipe.findById(recipeId);
+
+    if (!recipe) {
+      return res.status(404).send("Recipe not found");
+    }
+
+    // Verify ownership
+    if (!recipe.user || recipe.user.toString() !== req.session.userId.toString()) {
+      req.flash("infoErrors", "You are not authorized to delete this recipe.");
+      return res.redirect(`/recipe/${recipeId}`);
+    }
+
+    // Clean up image file from public/uploads if it exists
+    if (recipe.image) {
+      const fs = require("fs");
+      const path = require("path");
+      const imagePath = path.join(__dirname, "../../public/uploads", recipe.image);
+      if (fs.existsSync(imagePath)) {
+        try {
+          fs.unlinkSync(imagePath);
+        } catch (err) {
+          console.error("Error deleting image file:", err);
+        }
+      }
+    }
+
+    // Delete the recipe
+    await Recipe.findByIdAndDelete(recipeId);
+
+    req.flash("infoSubmit", "Recipe has been successfully deleted.");
+    res.redirect("/");
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occurred" });
+  }
+};
+
+/**
+ * GET /about
+ * About Page
+ */
+exports.aboutPage = async (req, res) => {
+  res.render("about", { title: "Cooking Blog - About" });
 };
