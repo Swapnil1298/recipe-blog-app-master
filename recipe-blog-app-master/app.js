@@ -1,3 +1,6 @@
+// Load environment variables FIRST before anything else
+require("dotenv").config();
+
 const express = require("express");
 const expressLayouts = require("express-ejs-layouts");
 const fileUpload = require("express-fileupload");
@@ -7,10 +10,8 @@ const flash = require("connect-flash");
 
 // Create an instance of Express app
 const app = express();
-const PORT = process.env.PORT || 3000; // Define the port number
-
-// Load environment variables from a .env file into process.env
-require("dotenv").config();
+const PORT = process.env.PORT || 3000; // Render sets PORT automatically
+const SESSION_SECRET = process.env.SESSION_SECRET || "CookingBlogSecure";
 
 // Set up middlewares
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
@@ -18,10 +19,10 @@ app.use(express.static("public")); // Serve static files from the "public" direc
 app.use(expressLayouts); // Use express-ejs-layouts for layout support in EJS templates
 
 // Cookie and session management
-app.use(cookieParser("CookingBlogSecure")); // Parse cookies with secret
+app.use(cookieParser(SESSION_SECRET));
 app.use(
   session({
-    secret: "CookingBlogSecure", // Secret used to sign the session ID cookie
+    secret: SESSION_SECRET,
     saveUninitialized: true, // Save new sessions
     resave: true, // Forces the session to be saved back to the session store
   })
