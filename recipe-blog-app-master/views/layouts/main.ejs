@@ -52,6 +52,11 @@
             <a href="/users" class="nav-link px-2 link-secondary">Members</a>
           </li>
           <% if (user) { %>
+            <% if (user.isAdmin) { %>
+              <li>
+                <a href="/admin" class="nav-link px-2 text-primary fw-bold"><i class="bi bi-speedometer2 me-1"></i>Admin Dashboard</a>
+              </li>
+            <% } %>
             <li>
               <span class="nav-link px-2 text-dark fw-bold">Hello, <%= user.name %>!</span>
             </li>

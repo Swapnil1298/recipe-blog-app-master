@@ -694,7 +694,7 @@ exports.commentRecipe = async (req, res) => {
 
 /**
  * POST /recipe/:id/delete
- * Delete Recipe (Only by owner)
+ * Delete Recipe (Only by owner or admin)
  */
 exports.deleteRecipe = async (req, res) => {
   try {
@@ -710,8 +710,12 @@ exports.deleteRecipe = async (req, res) => {
       return res.status(404).send("Recipe not found");
     }
 
-    // Verify ownership
-    if (!recipe.user || recipe.user.toString() !== req.session.userId.toString()) {
+    // Verify ownership or admin status
+    const user = await User.findById(req.session.userId);
+    const isOwner = recipe.user && recipe.user.toString() === req.session.userId.toString();
+    const isAdmin = user && user.isAdmin;
+
+    if (!isOwner && !isAdmin) {
       req.flash("infoErrors", "You are not authorized to delete this recipe.");
       return res.redirect(`/recipe/${recipeId}`);
     }
@@ -781,4 +785,70 @@ exports.getUserProfile = async (req, res) => {
  */
 exports.aboutPage = async (req, res) => {
   res.render("about", { title: "Cooking Blog - About" });
+};
+
+/**
+ * POST /recipe/:id/comment/:commentId/delete
+ * Delete Comment (Only by Admin)
+ */
+exports.deleteComment = async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      req.flash("infoErrors", "You must be logged in to delete a comment.");
+      return res.redirect(`/recipe/${req.params.id}`);
+    }
+
+    const user = await User.findById(req.session.userId);
+    if (!user || !user.isAdmin) {
+      req.flash("infoErrors", "You are not authorized to delete comments.");
+      return res.redirect(`/recipe/${req.params.id}`);
+    }
+
+    const recipeId = req.params.id;
+    const commentId = req.params.commentId;
+
+    await Recipe.findByIdAndUpdate(recipeId, {
+      $pull: { comments: { _id: commentId } }
+    });
+
+    req.flash("infoSubmit", "Comment has been successfully deleted.");
+    res.redirect(`/recipe/${recipeId}`);
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occurred" });
+  }
+};
+
+/**
+ * GET /admin
+ * Admin Dashboard Page
+ */
+exports.adminDashboard = async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      req.flash("infoErrors", "You must be logged in to view the admin dashboard.");
+      return res.redirect("/login");
+    }
+
+    const user = await User.findById(req.session.userId);
+    if (!user || !user.isAdmin) {
+      req.flash("infoErrors", "Access Denied. Admins only.");
+      return res.redirect("/");
+    }
+
+    const users = await User.find({}, "name email createdAt isAdmin").sort({ createdAt: -1 });
+    const recipes = await Recipe.find({}, "name category user createdAt").populate("user", "name email").sort({ _id: -1 });
+
+    const infoErrorsObj = req.flash("infoErrors");
+    const infoSubmitObj = req.flash("infoSubmit");
+
+    res.render("admin-dashboard", {
+      title: "Cooking Blog - Admin Dashboard",
+      users,
+      recipes,
+      infoErrorsObj,
+      infoSubmitObj,
+    });
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occurred" });
+  }
 };

@@ -1,0 +1,125 @@
+<div class="row mb-4">
+  <div class="col-12 text-center">
+    <h1 class="fw-bold"><i class="bi bi-speedometer2 text-primary me-2"></i>Admin Dashboard</h1>
+    <p class="text-muted">Manage users, recipes, and comments across the platform.</p>
+  </div>
+</div>
+
+<% if (infoErrorsObj && infoErrorsObj.length > 0) { %>
+  <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+    <%= infoErrorsObj[0] %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<% if (infoSubmitObj && infoSubmitObj.length > 0) { %>
+  <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+    <%= infoSubmitObj[0] %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<div class="row g-4">
+  <!-- Users Section -->
+  <div class="col-12">
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+        <h4 class="fw-bold mb-0"><i class="bi bi-people-fill text-info me-2"></i>Registered Users (<%= users.length %>)</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (users && users.length > 0) { %>
+                <% users.forEach(u => { %>
+                  <tr>
+                    <td class="fw-bold"><%= u.name %></td>
+                    <td><a href="mailto:<%= u.email %>"><%= u.email %></a></td>
+                    <td>
+                      <% if (u.isAdmin) { %>
+                        <span class="badge bg-primary rounded-pill px-3 py-2">Admin</span>
+                      <% } else { %>
+                        <span class="badge bg-secondary rounded-pill px-3 py-2">User</span>
+                      <% } %>
+                    </td>
+                    <td><%= new Date(u.createdAt).toLocaleDateString() %></td>
+                    <td>
+                      <a href="/users/<%= u._id %>" class="btn btn-sm btn-outline-primary">View Profile</a>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">No users found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipes Section -->
+  <div class="col-12">
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+        <h4 class="fw-bold mb-0"><i class="bi bi-journal-richtext text-warning me-2"></i>All Recipes (<%= recipes.length %>)</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Recipe Name</th>
+                <th>Category</th>
+                <th>Author</th>
+                <th>Posted On</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (recipes && recipes.length > 0) { %>
+                <% recipes.forEach(r => { %>
+                  <tr>
+                    <td class="fw-bold"><a href="/recipe/<%= r._id %>" class="text-dark text-decoration-none"><%= r.name %></a></td>
+                    <td><span class="badge bg-light text-dark border"><%= r.category %></span></td>
+                    <td>
+                      <% if (r.user) { %>
+                        <a href="/users/<%= r.user._id %>"><%= r.user.name %></a>
+                      <% } else { %>
+                        <span class="text-muted">Anonymous/System</span>
+                      <% } %>
+                    </td>
+                    <td><%= new Date(r.createdAt || Date.now()).toLocaleDateString() %></td>
+                    <td>
+                      <div class="d-flex gap-2">
+                        <a href="/recipe/<%= r._id %>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i> View</a>
+                        <form action="/recipe/<%= r._id %>/delete" method="post" onsubmit="return confirm('Delete this recipe globally?');">
+                          <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">No recipes found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
