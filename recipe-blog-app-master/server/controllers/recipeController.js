@@ -3,7 +3,7 @@ require("../models/database");
 const Category = require("../models/Category");
 const Recipe = require("../models/Recipe");
 const User = require("../models/User");
-const { sendLikeNotification, sendCommentNotification } = require("../utils/mailer");
+const { sendLikeNotification, sendCommentNotification, sendRecipeSubmissionNotification } = require("../utils/mailer");
 
 /**
  * GET /
@@ -199,6 +199,21 @@ exports.submitRecipeOnPost = async (req, res) => {
     });
 
     await newRecipe.save();
+
+    // ── Send submission confirmation email to the recipe author ──────────────
+    try {
+      const author = await User.findById(req.session.userId, "name email");
+      if (author && author.email) {
+        sendRecipeSubmissionNotification({
+          ownerEmail: author.email,
+          ownerName:  author.name,
+          recipeName: newRecipe.name,
+          recipeId:   newRecipe._id,
+        }).catch((err) => console.error("Submission email error:", err.message));
+      }
+    } catch (mailErr) {
+      console.error("Submission email lookup error:", mailErr.message);
+    }
 
     req.flash("infoSubmit", "Your recipe has been submitted successfully.");
     res.redirect("/submit-recipe");
