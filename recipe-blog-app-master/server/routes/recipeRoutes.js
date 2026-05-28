@@ -3,6 +3,7 @@ const router = express.Router();
 
 const recipeController = require("../controllers/recipeController");
 const authController = require("../controllers/authController");
+const seedController = require("../controllers/seedController");
 
 /**
  * App Routes
@@ -28,6 +29,9 @@ router.post("/recipe/:id/delete", recipeController.deleteRecipe);
 // Admin Routes
 router.get("/admin", recipeController.adminDashboard);
 router.post("/recipe/:id/comment/:commentId/delete", recipeController.deleteComment);
+
+// Seed Route (one-time setup, protected by secret key)
+router.get("/seed-database/:key", seedController.seedDatabase);
 
 // Auth Routes
 router.get("/register", authController.getRegister);
