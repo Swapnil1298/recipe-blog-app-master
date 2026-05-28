@@ -17,6 +17,8 @@ router.get("/explore-random", recipeController.exploreRandom);
 router.get("/submit-recipe", recipeController.submitRecipe);
 router.post("/submit-recipe", recipeController.submitRecipeOnPost);
 router.get("/about", recipeController.aboutPage);
+router.get("/users", recipeController.usersPage);
+router.get("/users/:id", recipeController.getUserProfile);
 
 // Interactions
 router.post("/recipe/:id/like", recipeController.likeRecipe);

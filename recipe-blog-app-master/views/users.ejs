@@ -1,0 +1,220 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Our Members</li>
+  </ol>
+</nav>
+
+<div class="container py-4">
+
+  <!-- Hero Banner -->
+  <div class="users-hero rounded-4 p-5 mb-5 text-center text-white position-relative overflow-hidden">
+    <div class="users-hero-overlay"></div>
+    <div class="position-relative z-1">
+      <div class="users-hero-icon mb-3">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <h1 class="display-5 fw-bold mb-2">Our Community Members</h1>
+      <p class="lead mb-3 opacity-75">Meet the passionate food lovers who make our community thrive.</p>
+      <span class="badge users-count-badge fs-6 px-4 py-2 rounded-pill">
+        <i class="bi bi-person-check-fill me-2"></i><%= users.length %> Registered Member<%= users.length !== 1 ? 's' : '' %>
+      </span>
+    </div>
+  </div>
+
+  <!-- Search / Filter Bar -->
+  <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <h2 class="fw-bold text-dark mb-0">
+      <i class="bi bi-grid-3x3-gap-fill me-2" style="color:#eb6928;"></i>Members Directory
+    </h2>
+    <div class="users-search-wrap">
+      <i class="bi bi-search users-search-icon"></i>
+      <input
+        type="text"
+        id="userSearchInput"
+        class="form-control users-search-input"
+        placeholder="Search members by name..."
+        oninput="filterUsers(this.value)"
+      />
+    </div>
+  </div>
+
+  <!-- No Results Message -->
+  <div id="noResultsMsg" class="text-center py-5 d-none">
+    <i class="bi bi-person-x-fill display-3 text-muted"></i>
+    <p class="text-muted mt-3 fs-5">No members match your search.</p>
+  </div>
+
+  <!-- Users Grid -->
+  <% if (users.length > 0) { %>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="usersGrid">
+    <% users.forEach(function(member, index) { %>
+    <div class="col user-card-col" data-name="<%= member.name.toLowerCase() %>">
+      <a href="/users/<%= member._id %>" class="text-decoration-none">
+        <div class="card user-card h-100 border-0 shadow-sm rounded-4 text-center p-3">
+          <!-- Avatar -->
+          <div class="user-avatar mx-auto mb-3" style="background: hsl(<%= (index * 47) % 360 %>, 65%, 55%);">
+            <span class="user-avatar-letter"><%= member.name.charAt(0).toUpperCase() %></span>
+          </div>
+          <div class="card-body p-0">
+            <h5 class="fw-bold text-dark mb-1 user-name"><%= member.name %></h5>
+            <p class="text-muted small mb-2 user-email">
+              <i class="bi bi-envelope-fill me-1" style="color:#eb6928;"></i>
+              <%= member.email %>
+            </p>
+            <hr class="my-2 mx-3" />
+            <p class="text-muted small mb-0">
+              <i class="bi bi-calendar3 me-1"></i>
+              Joined <%= new Date(member.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+            </p>
+          </div>
+          <div class="user-card-badge mt-3">
+            <span class="badge rounded-pill" style="background-color:#eb6928;">
+              <i class="bi bi-star-fill me-1"></i>Member
+            </span>
+          </div>
+          <div class="mt-2">
+            <span class="small text-muted"><i class="bi bi-arrow-right-circle me-1" style="color:#eb6928;"></i>View Profile</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    <% }); %>
+  </div>
+  <% } else { %>
+  <div class="text-center py-5">
+    <i class="bi bi-person-x-fill display-1 text-muted"></i>
+    <h4 class="mt-3 text-muted">No members have registered yet.</h4>
+    <a href="/register" class="btn btn-lg mt-3 rounded-pill px-5" style="background-color:#eb6928; color:#fff;">
+      <i class="bi bi-person-plus-fill me-2"></i>Be the First to Join!
+    </a>
+  </div>
+  <% } %>
+
+  <!-- CTA Banner at bottom -->
+  <div class="users-cta rounded-4 mt-5 p-4 text-center">
+    <h4 class="fw-bold text-dark mb-2">Not a member yet?</h4>
+    <p class="text-muted mb-3">Join our community and start sharing your favourite recipes today.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="/register" class="btn btn-lg rounded-pill px-4 fw-bold" style="background-color:#eb6928; color:#fff; border:none;">
+        <i class="bi bi-person-plus-fill me-2"></i>Register Now
+      </a>
+      <a href="/submit-recipe" class="btn btn-lg btn-outline-secondary rounded-pill px-4 fw-bold">
+        <i class="bi bi-journal-plus me-2"></i>Submit a Recipe
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Inline Styles for Users Page -->
+<style>
+  /* Hero Banner */
+  .users-hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #eb6928 60%, #f4a261 100%);
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .users-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .users-hero-icon {
+    font-size: 3rem;
+    opacity: 0.9;
+  }
+  .users-count-badge {
+    background: rgba(255,255,255,0.25);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Search */
+  .users-search-wrap {
+    position: relative;
+  }
+  .users-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    pointer-events: none;
+  }
+  .users-search-input {
+    padding-left: 36px;
+    border-radius: 50px;
+    border: 2px solid #e8e8e8;
+    min-width: 260px;
+    transition: border-color 0.2s;
+  }
+  .users-search-input:focus {
+    border-color: #eb6928;
+    box-shadow: 0 0 0 3px rgba(235,105,40,0.12);
+  }
+
+  /* User Card */
+  .user-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: default;
+  }
+  .user-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.12) !important;
+  }
+  .user-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .user-avatar-letter {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+  .user-name {
+    font-size: 1rem;
+  }
+  .user-email {
+    font-size: 0.78rem;
+    word-break: break-all;
+  }
+
+  /* CTA */
+  .users-cta {
+    background: linear-gradient(135deg, #fff8f4 0%, #fff3eb 100%);
+    border: 2px dashed #f4a261;
+  }
+</style>
+
+<script>
+  function filterUsers(query) {
+    const q = query.toLowerCase().trim();
+    const cols = document.querySelectorAll('.user-card-col');
+    let visibleCount = 0;
+    cols.forEach(col => {
+      const name = col.getAttribute('data-name') || '';
+      if (name.includes(q)) {
+        col.style.display = '';
+        visibleCount++;
+      } else {
+        col.style.display = 'none';
+      }
+    });
+    const noMsg = document.getElementById('noResultsMsg');
+    noMsg.classList.toggle('d-none', visibleCount > 0 || q === '');
+  }
+</script>

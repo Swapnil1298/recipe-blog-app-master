@@ -1,0 +1,285 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item"><a href="/users">Members</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><%= member.name %></li>
+  </ol>
+</nav>
+
+<div class="container py-4 px-0">
+
+  <!-- Profile Hero Card -->
+  <div class="profile-hero rounded-4 mb-5 position-relative overflow-hidden">
+    <div class="profile-hero-bg"></div>
+    <div class="profile-hero-pattern"></div>
+    <div class="position-relative z-1 p-5 text-white d-flex flex-column flex-md-row align-items-center gap-4">
+
+      <!-- Big Avatar -->
+      <div class="profile-avatar-xl flex-shrink-0"
+           style="background: hsl(<%= (member.name.charCodeAt(0) * 47) % 360 %>, 65%, 55%);">
+        <span class="profile-avatar-letter"><%= member.name.charAt(0).toUpperCase() %></span>
+      </div>
+
+      <!-- Member Info -->
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
+          <h1 class="display-6 fw-bold mb-0"><%= member.name %></h1>
+          <span class="badge profile-badge-member px-3 py-2 rounded-pill fs-6">
+            <i class="bi bi-patch-check-fill me-1"></i>Member
+          </span>
+        </div>
+        <p class="mb-1 opacity-85">
+          <i class="bi bi-envelope-fill me-2"></i><%= member.email %>
+        </p>
+        <p class="mb-3 opacity-75 small">
+          <i class="bi bi-calendar3 me-2"></i>
+          Member since <%= new Date(member.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+        </p>
+        <!-- Stats Row -->
+        <div class="d-flex gap-4 flex-wrap">
+          <div class="profile-stat text-center">
+            <div class="profile-stat-num"><%= recipes.length %></div>
+            <div class="profile-stat-label">Recipe<%= recipes.length !== 1 ? 's' : '' %> Shared</div>
+          </div>
+          <div class="profile-stat text-center">
+            <div class="profile-stat-num">
+              <%= recipes.reduce(function(sum, r){ return sum + ((r.likes && r.likes.length) || 0); }, 0) %>
+            </div>
+            <div class="profile-stat-label">Total Likes</div>
+          </div>
+          <div class="profile-stat text-center">
+            <div class="profile-stat-num">
+              <%= recipes.reduce(function(sum, r){ return sum + ((r.comments && r.comments.length) || 0); }, 0) %>
+            </div>
+            <div class="profile-stat-label">Comments</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Back Button -->
+      <div class="flex-shrink-0 align-self-start">
+        <a href="/users" class="btn profile-back-btn rounded-pill px-4 fw-semibold">
+          <i class="bi bi-arrow-left me-1"></i>All Members
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipes Section Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0">
+      <i class="bi bi-journal-richtext me-2" style="color:#eb6928;"></i>
+      Recipes by <span style="color:#eb6928;"><%= member.name %></span>
+    </h2>
+    <span class="badge rounded-pill fs-6 px-4 py-2" style="background:#eb6928; color:#fff;">
+      <%= recipes.length %> Recipe<%= recipes.length !== 1 ? 's' : '' %>
+    </span>
+  </div>
+
+  <!-- Recipes Grid -->
+  <% if (recipes.length > 0) { %>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+    <% recipes.forEach(function(recipe) { %>
+    <div class="col">
+      <a href="/recipe/<%= recipe._id %>" class="text-decoration-none">
+        <div class="card profile-recipe-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+
+          <!-- Recipe Image -->
+          <div class="profile-recipe-img-wrap position-relative overflow-hidden">
+            <img
+              src="/uploads/<%= recipe.image %>"
+              alt="<%= recipe.name %>"
+              class="profile-recipe-img w-100"
+              loading="lazy"
+              onerror="this.src='/img/no-image.png'"
+            />
+            <div class="profile-recipe-img-overlay"></div>
+            <!-- Category Badge -->
+            <span class="badge profile-cat-badge position-absolute top-0 end-0 m-2 rounded-pill px-3 py-2">
+              <i class="bi bi-tag-fill me-1"></i><%= recipe.category %>
+            </span>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body p-4">
+            <h5 class="fw-bold text-dark mb-2 profile-recipe-title"><%= recipe.name %></h5>
+            <p class="text-muted small mb-3 profile-recipe-desc">
+              <%= recipe.description.substring(0, 100) %><% if (recipe.description.length > 100) { %>…<% } %>
+            </p>
+
+            <!-- Ingredients count -->
+            <p class="text-muted small mb-3">
+              <i class="bi bi-list-ul me-1" style="color:#eb6928;"></i>
+              <%= recipe.ingredients.length %> Ingredient<%= recipe.ingredients.length !== 1 ? 's' : '' %>
+            </p>
+
+            <!-- Footer Meta -->
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex gap-3">
+                <span class="text-muted small d-flex align-items-center gap-1">
+                  <i class="bi bi-heart-fill text-danger"></i>
+                  <%= (recipe.likes && recipe.likes.length) || 0 %>
+                </span>
+                <span class="text-muted small d-flex align-items-center gap-1">
+                  <i class="bi bi-chat-left-fill" style="color:#eb6928;"></i>
+                  <%= (recipe.comments && recipe.comments.length) || 0 %>
+                </span>
+              </div>
+              <span class="profile-view-btn small fw-semibold">
+                View Recipe <i class="bi bi-arrow-right ms-1"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <% }); %>
+  </div>
+
+  <% } else { %>
+  <!-- Empty State -->
+  <div class="text-center py-5 profile-empty-state rounded-4">
+    <i class="bi bi-journal-x display-1 text-muted mb-3 d-block"></i>
+    <h4 class="text-muted fw-semibold"><%= member.name %> hasn't shared any recipes yet.</h4>
+    <p class="text-muted mb-4">Check back later or explore recipes from other members.</p>
+    <a href="/" class="btn rounded-pill px-5 fw-bold" style="background:#eb6928; color:#fff; border:none;">
+      <i class="bi bi-house-fill me-2"></i>Explore Recipes
+    </a>
+  </div>
+  <% } %>
+
+</div>
+
+<!-- Inline Styles -->
+<style>
+  /* ── Profile Hero ── */
+  .profile-hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #eb6928 65%, #f4a261 100%);
+    min-height: 200px;
+  }
+  .profile-hero-pattern {
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  /* ── Avatar XL ── */
+  .profile-avatar-xl {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.3);
+    border: 4px solid rgba(255,255,255,0.35);
+    flex-shrink: 0;
+  }
+  .profile-avatar-letter {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  /* ── Badges / Buttons ── */
+  .profile-badge-member {
+    background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    font-weight: 600;
+  }
+  .profile-back-btn {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    transition: background 0.2s;
+  }
+  .profile-back-btn:hover {
+    background: rgba(255,255,255,0.32);
+    color: #fff;
+  }
+
+  /* ── Stats ── */
+  .profile-stat-num {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+  .profile-stat-label {
+    font-size: 0.75rem;
+    opacity: 0.75;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Recipe Card ── */
+  .profile-recipe-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .profile-recipe-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 48px rgba(0,0,0,0.14) !important;
+  }
+  .profile-recipe-img-wrap {
+    height: 200px;
+  }
+  .profile-recipe-img {
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .profile-recipe-card:hover .profile-recipe-img {
+    transform: scale(1.06);
+  }
+  .profile-recipe-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 60%);
+  }
+  .profile-cat-badge {
+    background: #eb6928;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .profile-recipe-title {
+    font-size: 1.05rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .profile-recipe-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+  }
+  .profile-view-btn {
+    color: #eb6928;
+    transition: letter-spacing 0.2s;
+  }
+  .profile-recipe-card:hover .profile-view-btn {
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Empty State ── */
+  .profile-empty-state {
+    background: linear-gradient(135deg, #fff8f4, #fff3eb);
+    border: 2px dashed #f4a261;
+    padding: 3rem;
+  }
+
+  /* ── Opacity helper ── */
+  .opacity-85 { opacity: 0.85; }
+</style>

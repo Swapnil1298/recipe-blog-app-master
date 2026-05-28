@@ -3,6 +3,7 @@ require("../models/database");
 const Category = require("../models/Category");
 const Recipe = require("../models/Recipe");
 const User = require("../models/User");
+const { sendLikeNotification, sendCommentNotification } = require("../utils/mailer");
 
 /**
  * GET /
@@ -577,13 +578,36 @@ exports.likeRecipe = async (req, res) => {
 
     // Toggle like
     const index = recipe.likes.indexOf(userId);
-    if (index === -1) {
+    const isNewLike = index === -1;
+    if (isNewLike) {
       recipe.likes.push(userId);
     } else {
       recipe.likes.splice(index, 1);
     }
 
     await recipe.save();
+
+    // ── Send email notification to recipe owner (only on new like, not unlike) ──
+    if (isNewLike && recipe.user && recipe.user.toString() !== userId.toString()) {
+      try {
+        const [liker, owner] = await Promise.all([
+          User.findById(userId, "name"),
+          User.findById(recipe.user, "name email"),
+        ]);
+        if (owner && owner.email) {
+          sendLikeNotification({
+            ownerEmail: owner.email,
+            ownerName: owner.name,
+            recipeName: recipe.name,
+            recipeId: recipe._id,
+            likerName: liker ? liker.name : "Someone",
+          }).catch((err) => console.error("Like email error:", err.message));
+        }
+      } catch (mailErr) {
+        console.error("Like email lookup error:", mailErr.message);
+      }
+    }
+
     res.redirect(`/recipe/${recipeId}`);
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
@@ -627,6 +651,26 @@ exports.commentRecipe = async (req, res) => {
     });
 
     await recipe.save();
+
+    // ── Send email notification to recipe owner ──────────────────────────────
+    if (recipe.user && recipe.user.toString() !== userId.toString()) {
+      try {
+        const owner = await User.findById(recipe.user, "name email");
+        if (owner && owner.email) {
+          sendCommentNotification({
+            ownerEmail: owner.email,
+            ownerName: owner.name,
+            recipeName: recipe.name,
+            recipeId: recipe._id,
+            commenterName: user.name,
+            commentText: comment.trim(),
+          }).catch((err) => console.error("Comment email error:", err.message));
+        }
+      } catch (mailErr) {
+        console.error("Comment email lookup error:", mailErr.message);
+      }
+    }
+
     res.redirect(`/recipe/${recipeId}`);
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
@@ -676,6 +720,41 @@ exports.deleteRecipe = async (req, res) => {
 
     req.flash("infoSubmit", "Recipe has been successfully deleted.");
     res.redirect("/");
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occurred" });
+  }
+};
+
+/**
+ * GET /users
+ * Registered Users List Page
+ */
+exports.usersPage = async (req, res) => {
+  try {
+    const users = await User.find({}, "name email createdAt").sort({ createdAt: -1 });
+    res.render("users", { title: "Cooking Blog - Our Members", users });
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occurred" });
+  }
+};
+
+/**
+ * GET /users/:id
+ * Member Profile Page — shows user info + all their submitted recipes
+ */
+exports.getUserProfile = async (req, res) => {
+  try {
+    const memberId = req.params.id;
+    const member = await User.findById(memberId, "name email createdAt");
+    if (!member) {
+      return res.status(404).send("Member not found");
+    }
+    const recipes = await Recipe.find({ user: memberId }).sort({ _id: -1 });
+    res.render("user-profile", {
+      title: `Cooking Blog - ${member.name}'s Profile`,
+      member,
+      recipes,
+    });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
   }

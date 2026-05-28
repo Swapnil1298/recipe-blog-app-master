@@ -48,6 +48,9 @@
           <li>
             <a href="/about" class="nav-link px-2 link-secondary">About</a>
           </li>
+          <li>
+            <a href="/users" class="nav-link px-2 link-secondary">Members</a>
+          </li>
           <% if (user) { %>
             <li>
               <span class="nav-link px-2 text-dark fw-bold">Hello, <%= user.name %>!</span>
@@ -89,6 +92,7 @@
             <a href="/" class="link-1">Home</a>
             <a href="/submit-recipe">Submit</a>
             <a href="/about">About</a>
+            <a href="/users">Members</a>
             <% if (user) { %>
               <a href="/logout">Logout</a>
             <% } else { %>
