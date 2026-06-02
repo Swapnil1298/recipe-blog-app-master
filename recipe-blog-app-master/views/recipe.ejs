@@ -42,16 +42,37 @@
     <% } %>
 
     <% if (canManageRecipeImage) { %>
-      <div class="card border-0 shadow-sm rounded-4 mt-3">
+      <div class="card recipe-image-upload-card border-0 shadow-sm rounded-4 mt-3">
         <div class="card-body">
-          <h6 class="fw-bold mb-3">
-            <i class="bi bi-cloud-upload me-1" style="color:#eb6928;"></i>
+          <h5 class="fw-bold mb-2">
+            <i class="bi bi-image-fill me-1" style="color:#eb6928;"></i>
             <%= recipe.image ? "Update Recipe Image" : "Upload Recipe Image" %>
-          </h6>
+          </h5>
+          <p class="text-muted small mb-3">
+            <%= recipe.image ? "Choose a new image to replace the current recipe image." : "This recipe was submitted without an image. Choose an image here and upload it now." %>
+          </p>
+
           <form action="/recipe/<%= recipe._id %>/image" method="post" enctype="multipart/form-data">
-            <input type="file" name="image" accept="image/*" class="form-control mb-3" required />
-            <button type="submit" class="btn btn-sm rounded-pill px-4 fw-bold" style="background:#eb6928; color:#fff; border:none;">
-              <i class="bi bi-upload me-1"></i>Upload Image
+            <label for="recipeImageInput" class="form-label fw-semibold">Choose Image</label>
+            <input
+              type="file"
+              id="recipeImageInput"
+              name="image"
+              accept="image/*"
+              class="form-control mb-3"
+              required
+            />
+
+            <img
+              id="recipeImagePreview"
+              src=""
+              alt="Selected recipe image preview"
+              class="img-fluid rounded-3 border mb-3 d-none"
+              style="max-height: 220px; object-fit: cover; width: 100%;"
+            />
+
+            <button type="submit" class="btn rounded-pill px-4 fw-bold w-100" style="background:#eb6928; color:#fff; border:none;">
+              <i class="bi bi-upload me-1"></i>Save Image to This Recipe
             </button>
           </form>
         </div>
@@ -189,3 +210,23 @@
 <% } else { %>
 <p>No item found.</p>
 <% } %>
+
+<script>
+  const recipeImageInput = document.getElementById("recipeImageInput");
+  const recipeImagePreview = document.getElementById("recipeImagePreview");
+
+  if (recipeImageInput && recipeImagePreview) {
+    recipeImageInput.addEventListener("change", function () {
+      const file = this.files && this.files[0];
+
+      if (!file) {
+        recipeImagePreview.classList.add("d-none");
+        recipeImagePreview.removeAttribute("src");
+        return;
+      }
+
+      recipeImagePreview.src = URL.createObjectURL(file);
+      recipeImagePreview.classList.remove("d-none");
+    });
+  }
+</script>
