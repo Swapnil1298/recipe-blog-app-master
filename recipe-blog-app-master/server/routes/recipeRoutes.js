@@ -5,6 +5,15 @@ const recipeController = require("../controllers/recipeController");
 const authController = require("../controllers/authController");
 const seedController = require("../controllers/seedController");
 
+function requireLogin(req, res, next) {
+  if (req.session && req.session.userId) {
+    return next();
+  }
+
+  req.flash("infoErrors", "Please log in or sign up to view member details.");
+  return res.redirect("/login");
+}
+
 /**
  * App Routes
  */
@@ -18,8 +27,8 @@ router.get("/explore-random", recipeController.exploreRandom);
 router.get("/submit-recipe", recipeController.submitRecipe);
 router.post("/submit-recipe", recipeController.submitRecipeOnPost);
 router.get("/about", recipeController.aboutPage);
-router.get("/users", recipeController.usersPage);
-router.get("/users/:id", recipeController.getUserProfile);
+router.get("/users", requireLogin, recipeController.usersPage);
+router.get("/users/:id", requireLogin, recipeController.getUserProfile);
 
 // Interactions
 router.post("/recipe/:id/like", recipeController.likeRecipe);

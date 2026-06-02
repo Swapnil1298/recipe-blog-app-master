@@ -6,6 +6,19 @@
 </nav>
 
 <div class="container py-4">
+  <% if (infoErrorsObj && infoErrorsObj.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+      <%= infoErrorsObj[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <% if (infoSubmitObj && infoSubmitObj.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+      <%= infoSubmitObj[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
 
   <!-- Hero Banner -->
   <div class="users-hero rounded-4 p-5 mb-5 text-center text-white position-relative overflow-hidden">

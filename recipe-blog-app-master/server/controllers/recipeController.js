@@ -751,7 +751,15 @@ exports.deleteRecipe = async (req, res) => {
 exports.usersPage = async (req, res) => {
   try {
     const users = await User.find({}, "name email createdAt").sort({ createdAt: -1 });
-    res.render("users", { title: "Cooking Blog - Our Members", users });
+    const infoErrorsObj = req.flash("infoErrors");
+    const infoSubmitObj = req.flash("infoSubmit");
+
+    res.render("users", {
+      title: "Cooking Blog - Our Members",
+      users,
+      infoErrorsObj,
+      infoSubmitObj,
+    });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
   }

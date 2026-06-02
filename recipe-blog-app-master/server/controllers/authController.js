@@ -42,8 +42,9 @@ exports.postRegister = async (req, res) => {
 
     await newUser.save();
 
-    req.flash("infoSubmit", "Registration successful! You can now log in.");
-    res.redirect("/login");
+    req.session.userId = newUser._id;
+    req.flash("infoSubmit", "Registration successful! You can now view member details.");
+    res.redirect("/users");
   } catch (error) {
     req.flash("infoErrors", error.message);
     res.redirect("/register");
