@@ -74,7 +74,7 @@
     <a href="/recipe/<%= recipe._id %>" class="col text-center category__link">
       <div class="category__img category__img--large shadow">
         <img
-          src="/uploads/<%= recipe.image %>"
+          src="<%= recipe.image ? '/uploads/' + recipe.image : '/img/publish-recipe.png' %>"
           alt="<%= recipe.name %>"
           loading="lazy"
         />
@@ -99,7 +99,7 @@
     <a href="/recipe/<%= recipe._id %>" class="col text-center category__link">
       <div class="category__img category__img--large shadow">
         <img
-          src="/uploads/<%= recipe.image %>"
+          src="<%= recipe.image ? '/uploads/' + recipe.image : '/img/publish-recipe.png' %>"
           alt="<%= recipe.name %>"
           loading="lazy"
         />
@@ -123,7 +123,7 @@
     <a href="/recipe/<%= recipe._id %>" class="col text-center category__link">
       <div class="category__img category__img--large shadow">
         <img
-          src="/uploads/<%= recipe.image %>"
+          src="<%= recipe.image ? '/uploads/' + recipe.image : '/img/publish-recipe.png' %>"
           alt="<%= recipe.name %>"
           loading="lazy"
         />
@@ -147,7 +147,7 @@
     <a href="/recipe/<%= recipe._id %>" class="col text-center category__link">
       <div class="category__img category__img--large shadow">
         <img
-          src="/uploads/<%= recipe.image %>"
+          src="<%= recipe.image ? '/uploads/' + recipe.image : '/img/publish-recipe.png' %>"
           alt="<%= recipe.name %>"
           loading="lazy"
         />

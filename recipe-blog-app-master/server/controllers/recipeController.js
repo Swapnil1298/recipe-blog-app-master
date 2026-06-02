@@ -1,9 +1,53 @@
 require("../models/database");
 
+const fs = require("fs");
+const path = require("path");
 const Category = require("../models/Category");
 const Recipe = require("../models/Recipe");
 const User = require("../models/User");
 const { sendLikeNotification, sendCommentNotification, sendRecipeSubmissionNotification } = require("../utils/mailer");
+
+function getUploadedRecipeImage(req) {
+  if (!req.files || !req.files.image) {
+    return null;
+  }
+
+  const imageFile = req.files.image;
+
+  if (!imageFile.mimetype || !imageFile.mimetype.startsWith("image/")) {
+    throw new Error("Please upload a valid image file.");
+  }
+
+  return imageFile;
+}
+
+async function saveRecipeImage(imageFile, recipeName) {
+  const extension = path.extname(imageFile.name || "");
+  const safeRecipeName = String(recipeName || "recipe")
+    .replace(/[^a-z0-9]/gi, "-")
+    .toLowerCase();
+  const imageName = `${Date.now()}-${safeRecipeName}${extension}`;
+  const uploadPath = path.join(__dirname, "../../public/uploads", imageName);
+
+  await imageFile.mv(uploadPath);
+
+  return imageName;
+}
+
+function deleteRecipeImageFile(imageName) {
+  if (!imageName) {
+    return;
+  }
+
+  const imagePath = path.join(__dirname, "../../public/uploads", imageName);
+  if (fs.existsSync(imagePath)) {
+    try {
+      fs.unlinkSync(imagePath);
+    } catch (err) {
+      console.error("Error deleting image file:", err);
+    }
+  }
+}
 
 /**
  * GET /
@@ -80,7 +124,14 @@ exports.exploreRecipe = async (req, res) => {
     let recipeId = req.params.id;
     const recipe = await Recipe.findById(recipeId);
     const infoErrorsObj = req.flash("infoErrors");
-    res.render("recipe", { title: "Cooking Blog - Recipe", recipe, infoErrorsObj });
+    const infoSubmitObj = req.flash("infoSubmit");
+
+    res.render("recipe", {
+      title: "Cooking Blog - Recipe",
+      recipe,
+      infoErrorsObj,
+      infoSubmitObj,
+    });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
   }
@@ -171,22 +222,10 @@ exports.submitRecipeOnPost = async (req, res) => {
       return res.redirect("/login");
     }
 
-    let imageUploadFile = req.files.image; // Changed to req.files.image to correctly access the uploaded file
-    let uploadPath;
-    let newImageName;
-    if (!imageUploadFile || Object.keys(imageUploadFile).length === 0) {
-      // Updated condition to check if imageUploadFile exists
-      console.log("No Files Were Uploaded!");
-    } else {
-      newImageName = Date.now() + req.body.name;
-
-      uploadPath =
-        require("path").resolve("./") + "/public/uploads/" + newImageName; // Added a missing slash before "public"
-
-      imageUploadFile.mv(uploadPath, function (err) {
-        if (err) return res.status(500).send(err);
-      });
-    }
+    const imageUploadFile = getUploadedRecipeImage(req);
+    const newImageName = imageUploadFile
+      ? await saveRecipeImage(imageUploadFile, req.body.name)
+      : "";
 
     const newRecipe = new Recipe({
       name: req.body.name,
@@ -215,10 +254,15 @@ exports.submitRecipeOnPost = async (req, res) => {
       console.error("Submission email lookup error:", mailErr.message);
     }
 
-    req.flash("infoSubmit", "Your recipe has been submitted successfully.");
-    res.redirect("/submit-recipe");
+    if (newRecipe.image) {
+      req.flash("infoSubmit", "Your recipe has been submitted successfully.");
+    } else {
+      req.flash("infoSubmit", "Your recipe has been submitted successfully. You can upload an image from the recipe page.");
+    }
+
+    res.redirect(`/recipe/${newRecipe._id}`);
   } catch (error) {
-    req.flash("infoErrors", error.message); // Changed to error.message to get the error message string
+    req.flash("infoErrors", error.message);
     res.redirect("/submit-recipe");
   }
 };
@@ -693,6 +737,50 @@ exports.commentRecipe = async (req, res) => {
 };
 
 /**
+ * POST /recipe/:id/image
+ * Upload or replace recipe image after submission
+ */
+exports.uploadRecipeImage = async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      req.flash("infoErrors", "You must be logged in to upload a recipe image.");
+      return res.redirect(`/recipe/${req.params.id}`);
+    }
+
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) {
+      return res.status(404).send("Recipe not found");
+    }
+
+    const user = await User.findById(req.session.userId);
+    const isOwner = recipe.user && recipe.user.toString() === req.session.userId.toString();
+    const isAdmin = user && user.isAdmin;
+
+    if (!isOwner && !isAdmin) {
+      req.flash("infoErrors", "You are not authorized to upload an image for this recipe.");
+      return res.redirect(`/recipe/${recipe._id}`);
+    }
+
+    const imageUploadFile = getUploadedRecipeImage(req);
+    if (!imageUploadFile) {
+      req.flash("infoErrors", "Please choose an image to upload.");
+      return res.redirect(`/recipe/${recipe._id}`);
+    }
+
+    const oldImage = recipe.image;
+    recipe.image = await saveRecipeImage(imageUploadFile, recipe.name);
+    await recipe.save();
+    deleteRecipeImageFile(oldImage);
+
+    req.flash("infoSubmit", "Recipe image uploaded successfully.");
+    res.redirect(`/recipe/${recipe._id}`);
+  } catch (error) {
+    req.flash("infoErrors", error.message);
+    res.redirect(`/recipe/${req.params.id}`);
+  }
+};
+
+/**
  * POST /recipe/:id/delete
  * Delete Recipe (Only by owner or admin)
  */
@@ -720,19 +808,7 @@ exports.deleteRecipe = async (req, res) => {
       return res.redirect(`/recipe/${recipeId}`);
     }
 
-    // Clean up image file from public/uploads if it exists
-    if (recipe.image) {
-      const fs = require("fs");
-      const path = require("path");
-      const imagePath = path.join(__dirname, "../../public/uploads", recipe.image);
-      if (fs.existsSync(imagePath)) {
-        try {
-          fs.unlinkSync(imagePath);
-        } catch (err) {
-          console.error("Error deleting image file:", err);
-        }
-      }
-    }
+    deleteRecipeImageFile(recipe.image);
 
     // Delete the recipe
     await Recipe.findByIdAndDelete(recipeId);

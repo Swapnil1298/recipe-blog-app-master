@@ -1,4 +1,5 @@
 <% if(recipe != null){ %>
+<% const canManageRecipeImage = user && (recipe.user && recipe.user.toString() === user._id.toString() || user.isAdmin); %>
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -9,15 +10,53 @@
   </ol>
 </nav>
 
+<% if (infoErrorsObj && infoErrorsObj.length > 0) { %>
+  <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+    <%= infoErrorsObj[0] %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<% if (infoSubmitObj && infoSubmitObj.length > 0) { %>
+  <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+    <%= infoSubmitObj[0] %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
 <div class="row">
   <div class="col-12 col-md-4">
-    <img
-      src="/uploads/<%- recipe.image %>"
-      alt="<%- recipe.name %>"
-      class="img-fluid sticky-top"
-      style="top: 20px"
-      loading="lazy"
-    />
+    <% if (recipe.image) { %>
+      <img
+        src="/uploads/<%- recipe.image %>"
+        alt="<%- recipe.name %>"
+        class="img-fluid sticky-top"
+        style="top: 20px"
+        loading="lazy"
+      />
+    <% } else { %>
+      <div class="recipe-image-placeholder sticky-top rounded-4 border border-2 border-dashed bg-light text-center p-4" style="top: 20px">
+        <i class="bi bi-image fs-1 text-muted d-block mb-2"></i>
+        <p class="fw-semibold text-muted mb-0">No recipe image uploaded yet.</p>
+      </div>
+    <% } %>
+
+    <% if (canManageRecipeImage) { %>
+      <div class="card border-0 shadow-sm rounded-4 mt-3">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">
+            <i class="bi bi-cloud-upload me-1" style="color:#eb6928;"></i>
+            <%= recipe.image ? "Update Recipe Image" : "Upload Recipe Image" %>
+          </h6>
+          <form action="/recipe/<%= recipe._id %>/image" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" class="form-control mb-3" required />
+            <button type="submit" class="btn btn-sm rounded-pill px-4 fw-bold" style="background:#eb6928; color:#fff; border:none;">
+              <i class="bi bi-upload me-1"></i>Upload Image
+            </button>
+          </form>
+        </div>
+      </div>
+    <% } %>
   </div>
 
   <div class="col-12 col-md-8">
@@ -81,13 +120,6 @@
 <div class="row">
   <div class="col-lg-8 col-12 mx-auto">
     <h3 class="fw-bold mb-4"><i class="bi bi-chat-left-text me-2" style="color: #eb6928 !important;"></i>Comments (<%= (recipe.comments && recipe.comments.length) || 0 %>)</h3>
-
-    <% if (infoErrorsObj && infoErrorsObj.length > 0) { %>
-      <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
-        <%= infoErrorsObj[0] %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    <% } %>
 
     <!-- Comment Input Form -->
     <% if (user) { %>

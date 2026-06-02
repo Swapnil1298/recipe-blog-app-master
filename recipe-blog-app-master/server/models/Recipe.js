@@ -29,7 +29,7 @@ const recipeSchema = new mongoose.Schema({
 
   image: {
     type: String,
-    required: "This field is required!",
+    default: "",
   },
 
   likes: [{

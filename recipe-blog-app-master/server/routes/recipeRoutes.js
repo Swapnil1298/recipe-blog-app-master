@@ -33,6 +33,7 @@ router.get("/users/:id", requireLogin, recipeController.getUserProfile);
 // Interactions
 router.post("/recipe/:id/like", recipeController.likeRecipe);
 router.post("/recipe/:id/comment", recipeController.commentRecipe);
+router.post("/recipe/:id/image", recipeController.uploadRecipeImage);
 router.post("/recipe/:id/delete", recipeController.deleteRecipe);
 
 // Admin Routes

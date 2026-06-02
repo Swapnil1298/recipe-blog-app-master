@@ -17,7 +17,7 @@
 <!-- Updated variable name -->
 <div class="col-8 m-auto mb-4 alert alert-danger" role="alert">
   <!-- Changed alert class to danger -->
-  <%= infoErrorsObj[0].message %>
+  <%= infoErrorsObj[0].message || infoErrorsObj[0] %>
 </div>
 <% } %>
 
@@ -105,13 +105,14 @@
         </div>
 
         <div class="col-12 mb-1">
-          <label for="image" class="form-label mb-1">Product Image</label>
+          <label for="image" class="form-label mb-1">Recipe Image <span class="text-muted">(optional)</span></label>
           <input
             type="file"
             class="form-control mb-1"
             name="image"
             accept="image/*"
           />
+          <small class="text-muted">You can upload an image later from the recipe page after submitting.</small>
         </div>
 
         <div class="col-12 mb-1">
