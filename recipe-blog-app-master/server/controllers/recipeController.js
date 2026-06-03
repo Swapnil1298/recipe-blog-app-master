@@ -138,18 +138,24 @@ exports.exploreRecipe = async (req, res) => {
 };
 
 /**
- * POST /search
+ * GET|POST /search
  * Search
  */
 exports.searchRecipe = async (req, res) => {
   try {
-    let searchTerm = req.body.searchTerm;
+    const searchTerm = String(req.body.searchTerm || req.query.searchTerm || "").trim();
 
-    let recipes = await Recipe.find({
-      $text: { $search: searchTerm, $diacriticSensitive: true },
+    const recipes = searchTerm
+      ? await Recipe.find({
+          $text: { $search: searchTerm, $diacriticSensitive: true },
+        })
+      : [];
+
+    res.render("search", {
+      title: "Cooking Blog - Search",
+      recipes,
+      searchTerm,
     });
-
-    res.render("search", { title: "Cooking Blog - Search", recipes: recipes }); // Pass 'recipes' instead of 'recipe'
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
   }
