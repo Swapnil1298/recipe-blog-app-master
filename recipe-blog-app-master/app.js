@@ -5,6 +5,7 @@ const express = require("express");
 const expressLayouts = require("express-ejs-layouts");
 const fileUpload = require("express-fileupload");
 const session = require("express-session");
+const { MongoStore } = require("connect-mongo");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 const connectDatabase = require("./server/models/database");
@@ -15,6 +16,10 @@ const PORT = process.env.PORT || 3000; // Render sets PORT automatically
 const SESSION_SECRET = process.env.SESSION_SECRET || "CookingBlogSecure";
 app.locals.databaseReady = false;
 app.locals.databaseError = null;
+
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -35,8 +40,18 @@ app.use(cookieParser(SESSION_SECRET));
 app.use(
   session({
     secret: SESSION_SECRET,
-    saveUninitialized: true, // Save new sessions
-    resave: true, // Forces the session to be saved back to the session store
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
+    }),
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    },
   })
 );
 
