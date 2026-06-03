@@ -21,6 +21,18 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
+app.locals.recipeImageSrc = function recipeImageSrc(recipe) {
+  if (!recipe) {
+    return "/img/publish-recipe.png";
+  }
+
+  if (/masala\s+tea/i.test(recipe.name || "")) {
+    return "/uploads/indian-masala-tea.png";
+  }
+
+  return recipe.image ? `/uploads/${encodeURIComponent(recipe.image)}` : "/img/publish-recipe.png";
+};
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")

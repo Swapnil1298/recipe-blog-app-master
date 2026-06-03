@@ -88,7 +88,7 @@
           <!-- Recipe Image -->
           <div class="profile-recipe-img-wrap position-relative overflow-hidden">
             <img
-              src="<%= recipe.image ? '/uploads/' + recipe.image : '/img/publish-recipe.png' %>"
+              src="<%= recipeImageSrc(recipe) %>"
               alt="<%= recipe.name %>"
               class="profile-recipe-img w-100"
               loading="lazy"
