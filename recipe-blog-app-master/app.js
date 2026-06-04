@@ -62,23 +62,27 @@ app.use(expressLayouts); // Use express-ejs-layouts for layout support in EJS te
 
 // Cookie and session management
 app.use(cookieParser(SESSION_SECRET));
-app.use(
-  session({
-    secret: SESSION_SECRET,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions",
-    }),
-    saveUninitialized: false,
-    resave: false,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    },
-  })
-);
+
+const sessionOptions = {
+  secret: SESSION_SECRET,
+  saveUninitialized: false,
+  resave: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  },
+};
+
+if (process.env.MONGO_URI) {
+  sessionOptions.store = MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: "sessions",
+  });
+}
+
+app.use(session(sessionOptions));
 
 // Flash messages middleware
 app.use(flash());
@@ -177,17 +181,21 @@ app.use(async (req, res, next) => {
 const routes = require("./server/routes/recipeRoutes.js"); // Import routes from recipeRoutes.js
 app.use("/", routes); // Use the routes
 
-async function startServer() {
+async function connectDatabaseInBackground() {
   try {
     await connectDatabase();
     app.locals.databaseReady = true;
+    app.locals.databaseError = null;
   } catch (error) {
     app.locals.databaseError = error.message;
     console.error(error.message);
   }
+}
 
+function startServer() {
   app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}...`);
+    connectDatabaseInBackground();
   });
 }
 

@@ -36,6 +36,23 @@ function isPlaceholder(value) {
   );
 }
 
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function sendGridTemplateEnabled(templateId) {
+  return (
+    process.env.SENDGRID_USE_TEMPLATE === "true" &&
+    templateId &&
+    !isPlaceholder(templateId)
+  );
+}
+
 // ── Bootstrap SendGrid ─────────────────────────────────────────────────────
 function initSendGrid() {
   const apiKey = process.env.SENDGRID_API_KEY;
@@ -166,6 +183,44 @@ function htmlWrapper(bodyContent) {
 }
 
 // ── Internal: send via SendGrid dynamic template ───────────────────────────
+function buildSendGridHtml(templateData) {
+  const actionLabel = templateData.action_label || "View Recipe";
+  const commentHtml = templateData.comment_text
+    ? `<p style="margin:16px 0 0;color:#333;font-size:15px;line-height:1.7;font-style:italic;">"${escapeHtml(templateData.comment_text)}"</p>`
+    : "";
+
+  return htmlWrapper(`
+    <p style="margin:0 0 6px;color:#888;font-size:13px;text-transform:uppercase;letter-spacing:1px;">
+      ${escapeHtml(templateData.notification_type || "Notification")}
+    </p>
+    <h2 style="margin:0 0 20px;color:#1a1a2e;font-size:22px;font-weight:800;">
+      ${escapeHtml(templateData.heading || "Cooking Blog notification")}
+    </h2>
+    <table width="100%" cellpadding="0" cellspacing="0"
+           style="background:#fff8f4;border-radius:12px;padding:20px;border-left:4px solid #eb6928;margin-bottom:24px;">
+      <tr>
+        <td>
+          <p style="margin:0 0 8px;color:#555;font-size:14px;">
+            Hi <strong style="color:#1a1a2e;">${escapeHtml(templateData.owner_name || "there")}</strong>,
+          </p>
+          <p style="margin:0;color:#555;font-size:14px;line-height:1.6;">
+            ${escapeHtml(templateData.message || "")}
+          </p>
+          ${commentHtml}
+        </td>
+      </tr>
+    </table>
+    <div style="text-align:center;margin-top:8px;">
+      <a href="${escapeHtml(templateData.recipe_url || "http://localhost:3000")}"
+         style="display:inline-block;background:linear-gradient(135deg,#eb6928,#f4a261);
+                color:#fff;text-decoration:none;padding:14px 36px;border-radius:50px;
+                font-weight:700;font-size:15px;letter-spacing:0.3px;
+                box-shadow:0 4px 16px rgba(235,105,40,0.35);">
+        ${escapeHtml(actionLabel)}
+      </a>
+    </div>`);
+}
+
 async function sendViaSendGrid({ to, subject, templateData }) {
   const templateId = process.env.SENDGRID_TEMPLATE_ID;
   const fromEmail  = process.env.EMAIL_FROM || "no-reply@cookingblog.com";
@@ -174,9 +229,14 @@ async function sendViaSendGrid({ to, subject, templateData }) {
     to,
     from: { email: fromEmail, name: "Cooking Blog 🍳" },
     subject,
-    templateId,
-    dynamicTemplateData: templateData,
   };
+
+  if (sendGridTemplateEnabled(templateId)) {
+    msg.templateId = templateId;
+    msg.dynamicTemplateData = templateData;
+  } else {
+    msg.html = buildSendGridHtml(templateData);
+  }
 
   await sgMail.send(msg);
   console.log(`📧 SendGrid: email sent to ${to} | subject: "${subject}"`);

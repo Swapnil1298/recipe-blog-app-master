@@ -26,6 +26,10 @@ async function connectDatabase() {
     return mongoose.connection;
   }
 
+  if (!process.env.MONGO_URI) {
+    throw new Error(getHelpfulMongoError(new Error("MONGO_URI is missing")));
+  }
+
   if (!connectionPromise) {
     connectionPromise = mongoose
       .connect(process.env.MONGO_URI, {
