@@ -46,9 +46,15 @@
             >
           </li>
           <li>
+            <a href="/popular" class="nav-link px-2 link-secondary">Popular</a>
+          </li>
+          <li>
             <a href="/about" class="nav-link px-2 link-secondary">About</a>
           </li>
           <% if (user) { %>
+            <li>
+              <a href="/users/<%= user._id %>" class="nav-link px-2 link-secondary">My Profile</a>
+            </li>
             <li>
               <a href="/users" class="nav-link px-2 link-secondary">Members</a>
             </li>
@@ -96,8 +102,10 @@
           <p class="footer-links">
             <a href="/" class="link-1">Home</a>
             <a href="/submit-recipe">Submit</a>
+            <a href="/popular">Popular</a>
             <a href="/about">About</a>
             <% if (user) { %>
+              <a href="/users/<%= user._id %>">My Profile</a>
               <a href="/users">Members</a>
               <a href="/logout">Logout</a>
             <% } else { %>

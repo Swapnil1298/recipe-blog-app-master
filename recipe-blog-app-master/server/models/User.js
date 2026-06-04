@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  savedRecipes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Recipe",
+  }],
 });
 
 module.exports = mongoose.model("User", userSchema);

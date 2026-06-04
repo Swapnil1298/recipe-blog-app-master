@@ -33,6 +33,19 @@ app.locals.recipeImageSrc = function recipeImageSrc(recipe) {
   return recipe.image ? `/uploads/${encodeURIComponent(recipe.image)}` : "/img/publish-recipe.png";
 };
 
+app.locals.averageRating = function averageRating(recipe) {
+  if (!recipe || !recipe.ratings || recipe.ratings.length === 0) {
+    return 0;
+  }
+
+  const total = recipe.ratings.reduce((sum, rating) => sum + rating.value, 0);
+  return total / recipe.ratings.length;
+};
+
+app.locals.userHasRecipe = function userHasRecipe(recipeIds, recipeId) {
+  return (recipeIds || []).some((id) => id && id.toString() === recipeId.toString());
+};
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")

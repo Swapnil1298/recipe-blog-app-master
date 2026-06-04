@@ -59,6 +59,43 @@
           ></textarea>
         </div>
 
+        <div class="col-md-4 mb-1">
+          <label for="cookingTime" class="form-label mb-1">Cooking Time (minutes)</label>
+          <input
+            type="number"
+            name="cookingTime"
+            id="cookingTime"
+            class="form-control mb-1"
+            min="1"
+            placeholder="30"
+          />
+        </div>
+
+        <div class="col-md-4 mb-1">
+          <label for="servings" class="form-label mb-1">Servings</label>
+          <input
+            type="number"
+            name="servings"
+            id="servings"
+            class="form-control mb-1"
+            min="1"
+            placeholder="4"
+          />
+        </div>
+
+        <div class="col-md-4 mb-1">
+          <label for="difficulty" class="form-label mb-1">Difficulty</label>
+          <select
+            name="difficulty"
+            id="difficulty"
+            class="form-select form-control mb-1"
+          >
+            <option value="Easy" selected>Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+
         <div class="col-12 mb-1">
           <label for="ingredients" class="form-label mb-1">Ingredients</label
           ><br />
@@ -83,6 +120,32 @@
             id="addIngredientsBtn"
           >
             + Ingredients
+          </button>
+        </div>
+
+        <div class="col-12 mb-1">
+          <label for="steps" class="form-label mb-1">Step-by-Step Instructions</label><br />
+          <small>Example: Preheat oven to 180 C</small>
+          <div class="stepList">
+            <div class="stepDiv mb-1">
+              <input
+                type="text"
+                name="steps"
+                id="steps"
+                class="form-control mb-1"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 mb-1">
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            id="addStepsBtn"
+          >
+            + Step
           </button>
         </div>
 

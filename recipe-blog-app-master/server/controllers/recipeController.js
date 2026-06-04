@@ -49,6 +49,35 @@ function deleteRecipeImageFile(imageName) {
   }
 }
 
+function normalizeList(value) {
+  return []
+    .concat(value || [])
+    .map((item) => String(item || "").trim())
+    .filter(Boolean);
+}
+
+function normalizePositiveNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? Math.round(number) : null;
+}
+
+function getAverageRating(recipe) {
+  if (!recipe.ratings || recipe.ratings.length === 0) {
+    return 0;
+  }
+
+  const total = recipe.ratings.reduce((sum, rating) => sum + rating.value, 0);
+  return total / recipe.ratings.length;
+}
+
+function sortByPopularity(recipes) {
+  return recipes.sort((a, b) => {
+    const bScore = ((b.likes && b.likes.length) || 0) * 2 + getAverageRating(b) + ((b.comments && b.comments.length) || 0);
+    const aScore = ((a.likes && a.likes.length) || 0) * 2 + getAverageRating(a) + ((a.comments && a.comments.length) || 0);
+    return bScore - aScore;
+  });
+}
+
 /**
  * GET /
  * HOMEPAGE
@@ -59,6 +88,7 @@ exports.homepage = async (req, res) => {
     const limitNumber = 5;
     const categories = await Category.find({}).limit(limitNumber);
     const latest = await Recipe.find({}).sort({ _id: -1 }).limit(limitNumber);
+    const popular = sortByPopularity(await Recipe.find({})).slice(0, limitNumber);
 
     const thai = await Recipe.find({ category: "Thai" }).limit(limitNumber);
     const american = await Recipe.find({ category: "American" }).limit(
@@ -68,7 +98,7 @@ exports.homepage = async (req, res) => {
       limitNumber
     );
 
-    const food = { latest, thai, american, chinese };
+    const food = { latest, popular, thai, american, chinese };
 
     res.render("index", { title: "Cooking Blog - Home", categories, food });
   } catch (error) {
@@ -180,6 +210,24 @@ exports.exploreLatest = async (req, res) => {
 };
 
 /**
+ * GET /popular
+ * Explore recipes with the most engagement
+ */
+exports.explorePopular = async (req, res) => {
+  try {
+    const recipes = sortByPopularity(await Recipe.find({})).slice(0, 30);
+
+    res.render("explore-latest", {
+      title: "Cooking Blog - Most Popular",
+      pageHeading: "Most Popular Recipes",
+      recipes,
+    });
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occurred" });
+  }
+};
+
+/**
  * GET /explore-random
  * Explore Random as JSON
  */
@@ -233,11 +281,24 @@ exports.submitRecipeOnPost = async (req, res) => {
       ? await saveRecipeImage(imageUploadFile, req.body.name)
       : "";
 
+    const ingredients = normalizeList(req.body.ingredients);
+    const steps = normalizeList(req.body.steps);
+
+    if (ingredients.length === 0) {
+      throw new Error("Please add at least one ingredient.");
+    }
+
     const newRecipe = new Recipe({
       name: req.body.name,
       description: req.body.description,
       email: req.body.email,
-      ingredients: req.body.ingredients,
+      ingredients,
+      steps,
+      cookingTime: normalizePositiveNumber(req.body.cookingTime),
+      servings: normalizePositiveNumber(req.body.servings),
+      difficulty: ["Easy", "Medium", "Hard"].includes(req.body.difficulty)
+        ? req.body.difficulty
+        : "Easy",
       category: req.body.category,
       image: newImageName,
       user: req.session.userId,
@@ -642,7 +703,8 @@ exports.likeRecipe = async (req, res) => {
     }
 
     // Toggle like
-    const index = recipe.likes.indexOf(userId);
+    recipe.likes = recipe.likes || [];
+    const index = recipe.likes.findIndex((likedUserId) => likedUserId.toString() === userId.toString());
     const isNewLike = index === -1;
     if (isNewLike) {
       recipe.likes.push(userId);
@@ -674,6 +736,92 @@ exports.likeRecipe = async (req, res) => {
     }
 
     res.redirect(`/recipe/${recipeId}`);
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occurred" });
+  }
+};
+
+/**
+ * POST /recipe/:id/save
+ * Toggle Saved Recipe
+ */
+exports.saveRecipe = async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      req.flash("infoErrors", "You must be logged in to save recipes.");
+      return res.redirect(`/recipe/${req.params.id}`);
+    }
+
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) {
+      return res.status(404).send("Recipe not found");
+    }
+
+    const currentUser = await User.findById(req.session.userId);
+    if (!currentUser) {
+      return res.status(404).send("User not found");
+    }
+
+    const recipeIndex = (currentUser.savedRecipes || []).findIndex(
+      (savedRecipeId) => savedRecipeId.toString() === recipe._id.toString()
+    );
+
+    if (recipeIndex === -1) {
+      currentUser.savedRecipes.push(recipe._id);
+      req.flash("infoSubmit", "Recipe saved to your profile.");
+    } else {
+      currentUser.savedRecipes.splice(recipeIndex, 1);
+      req.flash("infoSubmit", "Recipe removed from your saved list.");
+    }
+
+    await currentUser.save();
+    res.redirect(`/recipe/${recipe._id}`);
+  } catch (error) {
+    res.status(500).send({ message: error.message || "Error Occurred" });
+  }
+};
+
+/**
+ * POST /recipe/:id/rate
+ * Create or update a user's rating
+ */
+exports.rateRecipe = async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      req.flash("infoErrors", "You must be logged in to rate recipes.");
+      return res.redirect(`/recipe/${req.params.id}`);
+    }
+
+    const ratingValue = Number(req.body.rating);
+    if (!Number.isInteger(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+      req.flash("infoErrors", "Please choose a rating from 1 to 5 stars.");
+      return res.redirect(`/recipe/${req.params.id}`);
+    }
+
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) {
+      return res.status(404).send("Recipe not found");
+    }
+
+    recipe.ratings = recipe.ratings || [];
+    const existingRating = recipe.ratings.find(
+      (rating) => rating.user.toString() === req.session.userId.toString()
+    );
+
+    if (existingRating) {
+      existingRating.value = ratingValue;
+      existingRating.createdAt = new Date();
+      req.flash("infoSubmit", "Your rating has been updated.");
+    } else {
+      recipe.ratings.push({
+        user: req.session.userId,
+        value: ratingValue,
+      });
+      req.flash("infoSubmit", "Thanks for rating this recipe.");
+    }
+
+    await recipe.save();
+    res.redirect(`/recipe/${recipe._id}`);
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
   }
@@ -818,6 +966,10 @@ exports.deleteRecipe = async (req, res) => {
 
     // Delete the recipe
     await Recipe.findByIdAndDelete(recipeId);
+    await User.updateMany(
+      { savedRecipes: recipeId },
+      { $pull: { savedRecipes: recipeId } }
+    );
 
     req.flash("infoSubmit", "Recipe has been successfully deleted.");
     res.redirect("/");
@@ -859,10 +1011,19 @@ exports.getUserProfile = async (req, res) => {
       return res.status(404).send("Member not found");
     }
     const recipes = await Recipe.find({ user: memberId }).sort({ _id: -1 });
+    const isOwnProfile = req.session.userId && req.session.userId.toString() === memberId.toString();
+    const savedRecipes = isOwnProfile
+      ? await User.findById(memberId)
+          .populate("savedRecipes")
+          .then((profileUser) => (profileUser.savedRecipes || []).filter(Boolean))
+      : [];
+
     res.render("user-profile", {
       title: `Cooking Blog - ${member.name}'s Profile`,
       member,
       recipes,
+      savedRecipes,
+      isOwnProfile,
     });
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });
@@ -926,7 +1087,13 @@ exports.adminDashboard = async (req, res) => {
     }
 
     const users = await User.find({}, "name email createdAt isAdmin").sort({ createdAt: -1 });
-    const recipes = await Recipe.find({}, "name category user createdAt").populate("user", "name email").sort({ _id: -1 });
+    const recipes = await Recipe.find({}, "name category user createdAt likes comments ratings difficulty cookingTime servings")
+      .populate("user", "name email")
+      .sort({ _id: -1 });
+    const mostPopularRecipe = sortByPopularity([...recipes])[0] || null;
+    const totalLikes = recipes.reduce((sum, recipe) => sum + ((recipe.likes && recipe.likes.length) || 0), 0);
+    const totalComments = recipes.reduce((sum, recipe) => sum + ((recipe.comments && recipe.comments.length) || 0), 0);
+    const totalRatings = recipes.reduce((sum, recipe) => sum + ((recipe.ratings && recipe.ratings.length) || 0), 0);
 
     const infoErrorsObj = req.flash("infoErrors");
     const infoSubmitObj = req.flash("infoSubmit");
@@ -935,6 +1102,14 @@ exports.adminDashboard = async (req, res) => {
       title: "Cooking Blog - Admin Dashboard",
       users,
       recipes,
+      stats: {
+        totalUsers: users.length,
+        totalRecipes: recipes.length,
+        totalLikes,
+        totalComments,
+        totalRatings,
+        mostPopularRecipe,
+      },
       infoErrorsObj,
       infoSubmitObj,
     });

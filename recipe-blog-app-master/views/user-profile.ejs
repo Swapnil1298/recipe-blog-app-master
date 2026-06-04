@@ -54,6 +54,12 @@
             </div>
             <div class="profile-stat-label">Comments</div>
           </div>
+          <% if (isOwnProfile) { %>
+            <div class="profile-stat text-center">
+              <div class="profile-stat-num"><%= savedRecipes.length %></div>
+              <div class="profile-stat-label">Saved</div>
+            </div>
+          <% } %>
         </div>
       </div>
 
@@ -65,6 +71,61 @@
       </div>
     </div>
   </div>
+
+  <% if (isOwnProfile) { %>
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <h2 class="fw-bold mb-0">
+        <i class="bi bi-bookmark-heart-fill me-2" style="color:#eb6928;"></i>
+        My Saved Recipes
+      </h2>
+      <span class="badge rounded-pill fs-6 px-4 py-2" style="background:#eb6928; color:#fff;">
+        <%= savedRecipes.length %> Saved
+      </span>
+    </div>
+
+    <% if (savedRecipes.length > 0) { %>
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mb-5">
+        <% savedRecipes.forEach(function(recipe) { %>
+          <div class="col">
+            <a href="/recipe/<%= recipe._id %>" class="text-decoration-none">
+              <div class="card profile-recipe-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="profile-recipe-img-wrap position-relative overflow-hidden">
+                  <img
+                    src="<%= recipeImageSrc(recipe) %>"
+                    alt="<%= recipe.name %>"
+                    class="profile-recipe-img w-100"
+                    loading="lazy"
+                    onerror="this.src='/img/no-image.png'"
+                  />
+                  <span class="badge profile-cat-badge position-absolute top-0 end-0 m-2 rounded-pill px-3 py-2">
+                    <i class="bi bi-bookmark-fill me-1"></i>Saved
+                  </span>
+                </div>
+                <div class="card-body p-4">
+                  <h5 class="fw-bold text-dark mb-2 profile-recipe-title"><%= recipe.name %></h5>
+                  <p class="text-muted small mb-3">
+                    <i class="bi bi-clock me-1" style="color:#eb6928;"></i>
+                    <%= recipe.cookingTime ? recipe.cookingTime + ' min' : 'Time TBD' %>
+                    <i class="bi bi-star-fill text-warning ms-2"></i>
+                    <%= averageRating(recipe) ? averageRating(recipe).toFixed(1) : 'New' %>
+                  </p>
+                  <span class="profile-view-btn small fw-semibold">
+                    View Recipe <i class="bi bi-arrow-right ms-1"></i>
+                  </span>
+                </div>
+              </div>
+            </a>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-4 profile-empty-state rounded-4 mb-5">
+        <i class="bi bi-bookmark display-5 text-muted mb-2 d-block"></i>
+        <h5 class="text-muted fw-semibold">No saved recipes yet.</h5>
+        <p class="text-muted mb-0">Open a recipe and click Save to collect it here.</p>
+      </div>
+    <% } %>
+  <% } %>
 
   <!-- Recipes Section Header -->
   <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">

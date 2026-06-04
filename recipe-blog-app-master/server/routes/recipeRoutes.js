@@ -24,6 +24,7 @@ router.get("/categories/:id", recipeController.exploreCategoriesById);
 router.get("/search", recipeController.searchRecipe);
 router.post("/search", recipeController.searchRecipe);
 router.get("/explore-latest", recipeController.exploreLatest);
+router.get("/popular", recipeController.explorePopular);
 router.get("/explore-random", recipeController.exploreRandom);
 router.get("/submit-recipe", recipeController.submitRecipe);
 router.post("/submit-recipe", recipeController.submitRecipeOnPost);
@@ -33,6 +34,8 @@ router.get("/users/:id", requireLogin, recipeController.getUserProfile);
 
 // Interactions
 router.post("/recipe/:id/like", recipeController.likeRecipe);
+router.post("/recipe/:id/save", recipeController.saveRecipe);
+router.post("/recipe/:id/rate", recipeController.rateRecipe);
 router.post("/recipe/:id/comment", recipeController.commentRecipe);
 router.post("/recipe/:id/image", recipeController.uploadRecipeImage);
 router.post("/recipe/:id/delete", recipeController.deleteRecipe);

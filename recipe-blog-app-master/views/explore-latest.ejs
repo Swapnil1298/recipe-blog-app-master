@@ -1,4 +1,4 @@
-<h1 class="pb-4">Explore Latest</h1>
+<h1 class="pb-4"><%= typeof pageHeading !== 'undefined' ? pageHeading : 'Explore Latest' %></h1>
 
 <div class="row row-cols-2 row-cols-lg-5 g-2 g-lg-3">
   <% recipes.forEach(function(recipe) { %>
@@ -11,6 +11,11 @@
       />
     </div>
     <div class="pt-1"><%= recipe.name %></div>
+    <div class="small text-muted">
+      <i class="bi bi-clock"></i> <%= recipe.cookingTime ? recipe.cookingTime + ' min' : 'Time TBD' %>
+      <i class="bi bi-star-fill text-warning ms-2"></i>
+      <%= averageRating(recipe) ? averageRating(recipe).toFixed(1) : 'New' %>
+    </div>
   </a>
   <% }) %>
 </div>
