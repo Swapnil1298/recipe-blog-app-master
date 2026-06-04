@@ -5,7 +5,12 @@ const path = require("path");
 const Category = require("../models/Category");
 const Recipe = require("../models/Recipe");
 const User = require("../models/User");
-const { sendLikeNotification, sendCommentNotification, sendRecipeSubmissionNotification } = require("../utils/mailer");
+const {
+  sendLikeNotification,
+  sendCommentNotification,
+  sendRatingNotification,
+  sendRecipeSubmissionNotification,
+} = require("../utils/mailer");
 
 function getUploadedRecipeImage(req) {
   if (!req.files || !req.files.image) {
@@ -821,6 +826,29 @@ exports.rateRecipe = async (req, res) => {
     }
 
     await recipe.save();
+
+    if (recipe.user && recipe.user.toString() !== req.session.userId.toString()) {
+      try {
+        const [rater, owner] = await Promise.all([
+          User.findById(req.session.userId, "name"),
+          User.findById(recipe.user, "name email"),
+        ]);
+
+        if (owner && owner.email) {
+          sendRatingNotification({
+            ownerEmail: owner.email,
+            ownerName: owner.name,
+            recipeName: recipe.name,
+            recipeId: recipe._id,
+            raterName: rater ? rater.name : "Someone",
+            ratingValue,
+          }).catch((err) => console.error("Rating email error:", err.message));
+        }
+      } catch (mailErr) {
+        console.error("Rating email lookup error:", mailErr.message);
+      }
+    }
+
     res.redirect(`/recipe/${recipe._id}`);
   } catch (error) {
     res.status(500).send({ message: error.message || "Error Occurred" });

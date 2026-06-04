@@ -359,6 +359,70 @@ async function sendCommentNotification({ ownerEmail, ownerName, recipeName, reci
 }
 
 /**
+ * sendRatingNotification
+ * Notifies a recipe owner that someone rated their recipe.
+ */
+async function sendRatingNotification({ ownerEmail, ownerName, recipeName, recipeId, raterName, ratingValue }) {
+  const recipeUrl = `http://localhost:3000/recipe/${recipeId}`;
+  const subject = `${raterName} rated your recipe "${recipeName}"`;
+
+  if (useSendGrid) {
+    await sendViaSendGrid({
+      to: ownerEmail,
+      subject,
+      templateData: {
+        notification_type: "New Rating",
+        emoji: "⭐",
+        heading: "Someone rated your recipe!",
+        owner_name: ownerName,
+        actor_name: raterName,
+        recipe_name: recipeName,
+        recipe_url: recipeUrl,
+        action_label: "View Your Recipe",
+        rating_value: ratingValue,
+        message: `${raterName} rated your recipe "${recipeName}" ${ratingValue}/5 stars.`,
+      },
+    });
+    return;
+  }
+
+  const body = `
+    <p style="margin:0 0 6px;color:#888;font-size:13px;text-transform:uppercase;letter-spacing:1px;">New Rating</p>
+    <h2 style="margin:0 0 20px;color:#1a1a2e;font-size:22px;font-weight:800;">
+      Someone rated your recipe!
+    </h2>
+
+    <table width="100%" cellpadding="0" cellspacing="0"
+           style="background:#fff8f4;border-radius:12px;padding:20px;border-left:4px solid #eb6928;margin-bottom:24px;">
+      <tr>
+        <td>
+          <p style="margin:0 0 8px;color:#555;font-size:14px;">
+            Hi <strong style="color:#1a1a2e;">${ownerName}</strong>,
+          </p>
+          <p style="margin:0;color:#555;font-size:14px;line-height:1.6;">
+            <strong style="color:#eb6928;">${raterName}</strong>
+            rated your recipe
+            <strong style="color:#1a1a2e;">"${recipeName}"</strong>
+            <strong style="color:#1a1a2e;">${ratingValue}/5 stars</strong>.
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <div style="text-align:center;margin-top:8px;">
+      <a href="${recipeUrl}"
+         style="display:inline-block;background:linear-gradient(135deg,#eb6928,#f4a261);
+                color:#fff;text-decoration:none;padding:14px 36px;border-radius:50px;
+                font-weight:700;font-size:15px;letter-spacing:0.3px;
+                box-shadow:0 4px 16px rgba(235,105,40,0.35);">
+        View Your Recipe
+      </a>
+    </div>`;
+
+  await sendViaNodemailer({ to: ownerEmail, subject, html: htmlWrapper(body) });
+}
+
+/**
  * sendRecipeSubmissionNotification
  * Notifies the recipe author that their recipe was successfully submitted.
  */
@@ -423,5 +487,6 @@ async function sendRecipeSubmissionNotification({ ownerEmail, ownerName, recipeN
 module.exports = {
   sendLikeNotification,
   sendCommentNotification,
+  sendRatingNotification,
   sendRecipeSubmissionNotification,
 };
