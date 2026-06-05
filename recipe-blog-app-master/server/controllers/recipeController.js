@@ -26,21 +26,12 @@ function getUploadedRecipeImage(req) {
   return imageFile;
 }
 
-async function saveRecipeImage(imageFile, recipeName) {
-  const extension = path.extname(imageFile.name || "");
-  const safeRecipeName = String(recipeName || "recipe")
-    .replace(/[^a-z0-9]/gi, "-")
-    .toLowerCase();
-  const imageName = `${Date.now()}-${safeRecipeName}${extension}`;
-  const uploadPath = path.join(__dirname, "../../public/uploads", imageName);
-
-  await imageFile.mv(uploadPath);
-
-  return imageName;
+function saveRecipeImage(imageFile) {
+  return `data:${imageFile.mimetype};base64,${imageFile.data.toString("base64")}`;
 }
 
 function deleteRecipeImageFile(imageName) {
-  if (!imageName) {
+  if (!imageName || /^data:image\//i.test(imageName) || /^https?:\/\//i.test(imageName) || imageName.startsWith("/")) {
     return;
   }
 
@@ -283,7 +274,7 @@ exports.submitRecipeOnPost = async (req, res) => {
 
     const imageUploadFile = getUploadedRecipeImage(req);
     const newImageName = imageUploadFile
-      ? await saveRecipeImage(imageUploadFile, req.body.name)
+      ? saveRecipeImage(imageUploadFile)
       : "";
 
     const ingredients = normalizeList(req.body.ingredients);
@@ -950,7 +941,7 @@ exports.uploadRecipeImage = async (req, res) => {
     }
 
     const oldImage = recipe.image;
-    recipe.image = await saveRecipeImage(imageUploadFile, recipe.name);
+    recipe.image = saveRecipeImage(imageUploadFile);
     await recipe.save();
     deleteRecipeImageFile(oldImage);
 

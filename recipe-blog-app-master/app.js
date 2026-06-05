@@ -26,11 +26,16 @@ app.locals.recipeImageSrc = function recipeImageSrc(recipe) {
     return "/img/publish-recipe.png";
   }
 
+  const image = String(recipe.image || "");
+  if (/^data:image\//i.test(image) || /^https?:\/\//i.test(image) || image.startsWith("/")) {
+    return image;
+  }
+
   if (/masala\s+tea/i.test(recipe.name || "")) {
     return "/uploads/indian-masala-tea.png";
   }
 
-  return recipe.image ? `/uploads/${encodeURIComponent(recipe.image)}` : "/img/publish-recipe.png";
+  return image ? `/uploads/${encodeURIComponent(image)}` : "/img/publish-recipe.png";
 };
 
 app.locals.averageRating = function averageRating(recipe) {
@@ -88,7 +93,11 @@ app.use(session(sessionOptions));
 app.use(flash());
 
 // Middleware to handle file uploads
-app.use(fileUpload());
+app.use(fileUpload({
+  limits: { fileSize: 5 * 1024 * 1024 },
+  abortOnLimit: true,
+  responseOnLimit: "Image uploads must be 5MB or smaller.",
+}));
 
 // Set the layout file for rendering views
 app.set("layout", "./layouts/main");
