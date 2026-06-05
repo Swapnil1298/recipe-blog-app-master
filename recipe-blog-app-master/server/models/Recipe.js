@@ -55,6 +55,17 @@ const recipeSchema = new mongoose.Schema({
     default: "",
   },
 
+  imageData: {
+    type: Buffer,
+    default: null,
+    select: false,
+  },
+
+  imageContentType: {
+    type: String,
+    default: "",
+  },
+
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

@@ -27,7 +27,11 @@ app.locals.recipeImageSrc = function recipeImageSrc(recipe) {
   }
 
   const image = String(recipe.image || "");
-  if (/^data:image\//i.test(image) || /^https?:\/\//i.test(image) || image.startsWith("/")) {
+  if ((recipe.imageData && recipe.imageData.length) || /^data:image\//i.test(image)) {
+    return `/recipe/${recipe._id}/image`;
+  }
+
+  if (/^https?:\/\//i.test(image) || image.startsWith("/")) {
     return image;
   }
 
@@ -36,6 +40,18 @@ app.locals.recipeImageSrc = function recipeImageSrc(recipe) {
   }
 
   return image ? `/uploads/${encodeURIComponent(image)}` : "/img/publish-recipe.png";
+};
+
+app.locals.recipeHasImage = function recipeHasImage(recipe) {
+  if (!recipe) {
+    return false;
+  }
+
+  return Boolean(
+    (recipe.imageData && recipe.imageData.length) ||
+    recipe.image ||
+    /masala\s+tea/i.test(recipe.name || "")
+  );
 };
 
 app.locals.averageRating = function averageRating(recipe) {

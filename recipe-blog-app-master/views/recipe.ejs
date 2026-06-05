@@ -1,6 +1,6 @@
 <% if(recipe != null){ %>
 <% const canManageRecipeImage = user && (recipe.user && recipe.user.toString() === user._id.toString() || user.isAdmin); %>
-<% const hasRecipeImage = recipe.image || /masala\s+tea/i.test(recipe.name || ""); %>
+<% const hasRecipeImage = recipeHasImage(recipe); %>
 <% const recipeAverageRating = averageRating(recipe); %>
 <% const userRating = user && recipe.ratings ? recipe.ratings.find(function(rating) { return rating.user && rating.user.toString() === user._id.toString(); }) : null; %>
 <% const isLiked = user && recipe.likes ? recipe.likes.some(function(likedUserId) { return likedUserId && likedUserId.toString() === user._id.toString(); }) : false; %>

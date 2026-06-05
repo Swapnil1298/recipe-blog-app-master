@@ -37,6 +37,7 @@ router.post("/recipe/:id/like", recipeController.likeRecipe);
 router.post("/recipe/:id/save", recipeController.saveRecipe);
 router.post("/recipe/:id/rate", recipeController.rateRecipe);
 router.post("/recipe/:id/comment", recipeController.commentRecipe);
+router.get("/recipe/:id/image", recipeController.recipeImage);
 router.post("/recipe/:id/image", recipeController.uploadRecipeImage);
 router.post("/recipe/:id/delete", recipeController.deleteRecipe);
 

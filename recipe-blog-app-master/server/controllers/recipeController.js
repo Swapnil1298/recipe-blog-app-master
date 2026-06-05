@@ -12,6 +12,8 @@ const {
   sendRecipeSubmissionNotification,
 } = require("../utils/mailer");
 
+const STORED_RECIPE_IMAGE = "__stored_recipe_image__";
+
 function getUploadedRecipeImage(req) {
   if (!req.files || !req.files.image) {
     return null;
@@ -26,12 +28,20 @@ function getUploadedRecipeImage(req) {
   return imageFile;
 }
 
-function saveRecipeImage(imageFile) {
-  return `data:${imageFile.mimetype};base64,${imageFile.data.toString("base64")}`;
+function saveRecipeImage(recipe, imageFile) {
+  recipe.image = STORED_RECIPE_IMAGE;
+  recipe.imageData = imageFile.data;
+  recipe.imageContentType = imageFile.mimetype;
 }
 
 function deleteRecipeImageFile(imageName) {
-  if (!imageName || /^data:image\//i.test(imageName) || /^https?:\/\//i.test(imageName) || imageName.startsWith("/")) {
+  if (
+    !imageName ||
+    imageName === STORED_RECIPE_IMAGE ||
+    /^data:image\//i.test(imageName) ||
+    /^https?:\/\//i.test(imageName) ||
+    imageName.startsWith("/")
+  ) {
     return;
   }
 
@@ -64,6 +74,18 @@ function getAverageRating(recipe) {
 
   const total = recipe.ratings.reduce((sum, rating) => sum + rating.value, 0);
   return total / recipe.ratings.length;
+}
+
+function parseDataUriImage(image) {
+  const match = String(image || "").match(/^data:(image\/[^;]+);base64,(.+)$/i);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    contentType: match[1],
+    data: Buffer.from(match[2], "base64"),
+  };
 }
 
 function sortByPopularity(recipes) {
@@ -273,9 +295,6 @@ exports.submitRecipeOnPost = async (req, res) => {
     }
 
     const imageUploadFile = getUploadedRecipeImage(req);
-    const newImageName = imageUploadFile
-      ? saveRecipeImage(imageUploadFile)
-      : "";
 
     const ingredients = normalizeList(req.body.ingredients);
     const steps = normalizeList(req.body.steps);
@@ -296,9 +315,12 @@ exports.submitRecipeOnPost = async (req, res) => {
         ? req.body.difficulty
         : "Easy",
       category: req.body.category,
-      image: newImageName,
       user: req.session.userId,
     });
+
+    if (imageUploadFile) {
+      saveRecipeImage(newRecipe, imageUploadFile);
+    }
 
     await newRecipe.save();
 
@@ -910,6 +932,40 @@ exports.commentRecipe = async (req, res) => {
 };
 
 /**
+ * GET /recipe/:id/image
+ * Serve a recipe image stored in MongoDB
+ */
+exports.recipeImage = async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id).select("image +imageData imageContentType");
+    if (!recipe) {
+      return res.status(404).send("Recipe not found");
+    }
+
+    let imageData = recipe.imageData;
+    let contentType = recipe.imageContentType;
+
+    if ((!imageData || !imageData.length) && /^data:image\//i.test(recipe.image || "")) {
+      const parsedImage = parseDataUriImage(recipe.image);
+      if (parsedImage) {
+        imageData = parsedImage.data;
+        contentType = parsedImage.contentType;
+      }
+    }
+
+    if (!imageData || !imageData.length) {
+      return res.status(404).send("Recipe image not found");
+    }
+
+    res.set("Content-Type", contentType || "image/jpeg");
+    res.set("Cache-Control", "public, max-age=86400");
+    return res.send(imageData);
+  } catch (error) {
+    return res.status(500).send({ message: error.message || "Error Occurred" });
+  }
+};
+
+/**
  * POST /recipe/:id/image
  * Upload or replace recipe image after submission
  */
@@ -941,7 +997,7 @@ exports.uploadRecipeImage = async (req, res) => {
     }
 
     const oldImage = recipe.image;
-    recipe.image = saveRecipeImage(imageUploadFile);
+    saveRecipeImage(recipe, imageUploadFile);
     await recipe.save();
     deleteRecipeImageFile(oldImage);
 
