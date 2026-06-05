@@ -14,6 +14,7 @@ const connectDatabase = require("./server/models/database");
 const app = express();
 const PORT = process.env.PORT || 3000; // Render sets PORT automatically
 const SESSION_SECRET = process.env.SESSION_SECRET || "CookingBlogSecure";
+const STORED_RECIPE_IMAGE = "__stored_recipe_image__";
 app.locals.databaseReady = false;
 app.locals.databaseError = null;
 
@@ -27,7 +28,11 @@ app.locals.recipeImageSrc = function recipeImageSrc(recipe) {
   }
 
   const image = String(recipe.image || "");
-  if ((recipe.imageData && recipe.imageData.length) || /^data:image\//i.test(image)) {
+  if (
+    image === STORED_RECIPE_IMAGE ||
+    (recipe.imageData && recipe.imageData.length) ||
+    /^data:image\//i.test(image)
+  ) {
     return `/recipe/${recipe._id}/image`;
   }
 
